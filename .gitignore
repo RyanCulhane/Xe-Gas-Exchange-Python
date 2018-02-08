@@ -1,0 +1,8 @@
+*.nii
+*.pdf
+*.pyc
+*.pptx
+*.tex
+/Raw_Data
+*.mat
+*.txt
