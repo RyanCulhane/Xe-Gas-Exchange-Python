@@ -9,32 +9,41 @@ from matplotlib import pyplot as plt
 import pdb
 
 class GXSubject(object):
-    def __init__(self,filename,RBC2barrier,subjectID):
-        print("Initiate subject "+subjectID+" Today is a beautiful day!")
-        self.filename = filename
-        self.RBC2barrier = RBC2barrier
-        self.subjectID = subjectID
+    def __init__(self):
+        print("Initiate subject 002102. Today is a beautiful day!")
+        self.filename = []
+        self.RBC2barrier = 0.468
+        self.subjectID = []
         self.TE90 = 460
 
         self.gas_highreso = []
         self.gas_highSNR = []
         self.dissolved = []
+
         self.rbc = []
         self.barrier = []
         self.gas_binning = []
         self.rbc2gas_binning = []
         self.barrier2gas_binning = []
 
+        self.ute = []
         self.mask = []
+        self.ute_reg = []
         self.mask_reg = []
         self.mask_reg_vent = []
 
         self.key_box = {}
         self.stats = {}
 
+        print("read in Xe data")
+        self.readinXe()
+
         print("mask processing")
-        self.maskInit(filename)
-        self.maskRegister(filename)
+        self.maskInit()
+
+        print("check alignemnt")
+        self.checkAlignment()
+        self.maskRegister()
 
         print("Gas_highreso binning and mask_vent")
         self.gasBinning()
@@ -46,23 +55,71 @@ class GXSubject(object):
 
         print("Clnical Report")
 
+    def checkAlignment(self):
+        # check if all the images are the same alignment
+        dim1 = 80
+        dim2 = 50
+        plt.figure()
+        plt.subplot(2,4,1)
+        plt.imshow(abs(self.gas_highreso[:,:,dim1]))
+        plt.title("gas_highreso")
+        plt.subplot(2,4,2)
+        plt.imshow(self.mask[:,:,dim1])
+        plt.title("mask")
+        plt.subplot(2,4,3)
+        plt.imshow(self.ute[:,:,dim1])
+        plt.title("ute")
+        plt.subplot(2,4,4)
+        plt.imshow(abs(self.dissolved[:,:,dim1]))
+        plt.title("dissolved")
+
+        plt.subplot(2,4,5)
+        plt.imshow(abs(self.gas_highreso[:,:,dim2]))
+        plt.title("gas_highreso")
+        plt.subplot(2,4,6)
+        plt.imshow(self.mask[:,:,dim2])
+        plt.title("mask")
+        plt.subplot(2,4,7)
+        plt.imshow(self.ute[:,:,dim2])
+        plt.title("ute")
+        plt.subplot(2,4,8)
+        plt.imshow(abs(self.dissolved[:,:,dim2]))
+        plt.title("dissolved")
+
+        plt.show()
+
+    def readinXe(self):
+        ## temporal usage
+        # read in dissolved and gas Xe
+        fdata = 'Sub002102_data.mat'
+
+        mat_input = sio.loadmat(fdata)
+        self.gas_highreso = mat_input['gasVol_highreso']
+        self.gas_highSNR = mat_input['gasVol_highSNR']
+        self.dissolved = mat_input['dissolvedVol']
+
     def maskInit(self):
         ## temporal usage
         fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        fute = 'BHUTE_Sub002102_FID49886_recon.nii'
 
-        mask = np.array(nib.load(fmask).get_data(),dtype='bool')
-        self.mask = mask
+        self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
+        self.ute = np.array(nib.load(fute).get_data())
 
     def maskRegister(self):
         ## temporal usage
-        self.mask_reg = mask_reg
+        from GX_utils import register
+
+        self.ute_reg, self.mask_reg = register(gas_highreso = abs(self.gas_highreso),
+                                               ute          = self.ute,
+                                               mask         = self.mask.astype(float))
 
     def gasBinning(self):
         ## Binning for gas_highreso
         from GX_defineColormaps import thre_vent
         from GX_utils import gasBinning
 
-        self.gas_binning,self.mask_reg_vent = gasBinning(gas_highreso  = self.gas_highreso,
+        self.gas_binning,self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso),
                                                          bin_threshold = thre_vent,
                                                          mask          = self.mask_reg,
                                                          percentile    = 0.99)
@@ -71,23 +128,23 @@ class GXSubject(object):
         ## Dixon decomposition to get rbc and barrier from dissolved
         from GX_utils import dixonDecomp
 
-        self.rbc, self.barrier = dixonDecomp(gas_highSNR     = self.gas_highSNR,
+        self.rbc, self.barrier = dixonDecomp(gas_highSNR     = abs(self.gas_highSNR),
                                              dissolved       = self.dissolved,
                                              mask_vent       = self.mask_reg_vent,
                                              meanRbc2barrier = self.RBC2barrier)
-     def barBinning(self):
-         ## binning for barrier
-         from GX_defineColormaps import thre_bar
-         from GX_utils import disBinning
+    def barBinning(self):
+        ## binning for barrier
+        from GX_defineColormaps import thre_bar
+        from GX_utils import disBinning
 
-         cor_TE90 = np.exp(self.TE90/2000)/np.exp(self.TE90/50000)
-         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
+        cor_TE90 = np.exp(self.TE90/2000)/np.exp(self.TE90/50000)
+        cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
 
-         self.barrier2gas_binning = disBinning(discomp       = self.barrier,
-                                               gas_highSNR   = self.gas_highSNR,
-                                               bin_threshold = thre_bar,
-                                               mask          = self.mask_reg_vent,
-                                               cor           = cor_TE90*cor_flipoff)
+        self.barrier2gas_binning = disBinning(discomp    = self.barrier,
+                                           gas_highSNR   = abs(self.gas_highSNR),
+                                           bin_threshold = thre_bar,
+                                           mask          = self.mask_reg_vent,
+                                           cor           = cor_TE90*cor_flipoff)
     def rbcBinning(self):
         ## binning for barrier
         from GX_defineColormaps import thre_rbc
@@ -97,8 +154,8 @@ class GXSubject(object):
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
 
         self.rbc2gas_binning = disBinning(discomp       = self.rbc,
-                                          gas_highSNR   = self.gas_highSNR,
-                                          bin_threshold = thre_bar,
+                                          gas_highSNR   = abs(self.gas_highSNR),
+                                          bin_threshold = thre_rbc,
                                           mask          = self.mask_reg_vent,
                                           cor           = cor_TE90*cor_flipoff)
 
@@ -122,3 +179,4 @@ if __name__ == "__main__":
 
     # Create helper object
     subject = GXSubject()
+    pdb.set_trace()

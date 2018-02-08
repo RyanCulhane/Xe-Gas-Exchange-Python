@@ -65,8 +65,6 @@ def gasBinning(gas_highreso,bin_threshold,mask,percentile):
     ## binning for gas
     from GX_utils import binning
 
-    gas_highreso = abs(gas_highreso)
-
     gas_thre = np.percentile(gas_highreso[mask], percentile)
 
     gas_highreso_m = np.divide(np.multiply(gas_highreso,mask),gas_thre)
@@ -79,6 +77,7 @@ def gasBinning(gas_highreso,bin_threshold,mask,percentile):
     mask_vent = gas_binning
     mask_vent[mask_vent<3] = 0
     mask_vent[mask_vent>0] = 1
+    mask_vent = mask_vent.astype(bool)
 
     return gas_binning, mask_vent
 
@@ -89,9 +88,9 @@ def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
 
     from GX_utils import binning
 
-    comp2gas = np.zeros(np.shape(gas_highreso))
+    comp2gas = np.zeros(np.shape(gas_highSNR))
 
-    comp2gas[mask] = np.divide(discomp[mask],abs(gas_highreso[mask]))
+    comp2gas[mask] = np.divide(discomp[mask],gas_highSNR[mask])
     comp2gas = np.multiply(comp2gas,cor)
 
     comp2gas[comp2gas < ground] = ground
@@ -99,3 +98,54 @@ def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
     comp2gas_binning= binning(comp2gas, bin_threshold)
 
     return comp2gas_binning
+
+def register(gas_highreso,ute, mask):
+
+    # register mask to gas_highreso, and apply the transform to UTE
+
+    sitk_mask = sitk.GetImageFromArray(mask)
+    sitk_gas = sitk.GetImageFromArray(gas_highreso)
+    sitk_ute = sitk.GetImageFromArray(ute)
+
+    ## registrate mask to gas_highreso
+    # set up elastix filter for the warpping
+    elastixImageFilter = sitk.ElastixImageFilter()
+    elastixImageFilter.SetFixedImage(sitk_gas) # gas highreso
+    elastixImageFilter.SetMovingImage(sitk_mask) # mask
+
+    # set up parameters for the warpping, we use affine first and then use bspline interpolation for non-rigid warpping
+    parameterMapVector = sitk.VectorOfParameterMap()
+    parameterMapVector.append(sitk.GetDefaultParameterMap("affine"))
+    elastixImageFilter.SetParameterMap(parameterMapVector)
+
+    elastixImageFilter.Execute()
+
+    # save warpped image
+    sitk_mask_reg = elastixImageFilter.GetResultImage()
+
+    np_mask_reg = sitk.GetArrayFromImage(sitk_mask_reg)
+
+    np_mask_reg[np_mask_reg < 0.5] = 0
+    np_mask_reg[np_mask_reg > 0] = 1
+    np_mask_reg = np_mask_reg.astype(bool)
+
+    # sitk_mask_reg = sitk.GetImageFromArray(np_mask_reg)
+    # sitk_mask_reg = sitk.PermuteAxes(sitk_mask_reg,[2,1,0])
+    # fix the direction change due to numpy array trans
+    # sitk.WriteImage(sitk_mask_reg,p_mask_grow+"_reg.nii")
+
+    # apply the same transform to the label image
+    transformParameterMap = elastixImageFilter.GetTransformParameterMap()
+
+    transformixImageFilter = sitk.TransformixImageFilter()
+    transformixImageFilter.SetTransformParameterMap(transformParameterMap)
+    transformixImageFilter.SetMovingImage(sitk_ute) # fixed ute
+
+    transformixImageFilter.Execute()
+
+    sitk_ute_reg = transformixImageFilter.GetResultImage()
+    sitk_ute_reg = sitk.PermuteAxes(sitk_ute_reg,[2,1,0])
+
+    np_ute_reg = sitk.GetArrayFromImage(sitk_ute_reg)
+    # sitk.WriteImage(sitk_ute_reg,p_ute_recon+"_reg.nii")
+    return np_ute_reg, np_mask_reg
