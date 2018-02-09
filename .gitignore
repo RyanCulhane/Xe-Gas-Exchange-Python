@@ -6,3 +6,5 @@
 /Raw_Data
 *.mat
 *.txt
+*.png
+*.h5

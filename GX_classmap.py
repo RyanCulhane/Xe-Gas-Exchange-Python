@@ -39,11 +39,10 @@ class GXSubject(object):
         self.readinXe()
 
         print("mask processing")
-        self.maskInit()
-
-        print("check alignemnt")
-        self.checkAlignment()
-        self.maskRegister()
+        self.uteSegmentation()
+        # print("check alignemnt")
+        # self.checkAlignment()
+        self.uteRegister()
 
         print("Gas_highreso binning and mask_vent")
         self.gasBinning()
@@ -98,15 +97,22 @@ class GXSubject(object):
         self.gas_highSNR = mat_input['gasVol_highSNR']
         self.dissolved = mat_input['dissolvedVol']
 
-    def maskInit(self):
+    def uteSegmentation(self):
         ## temporal usage
-        fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        from GX_CNNpredict import CNNpredict
+
+        # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        # self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
+
         fute = 'BHUTE_Sub002102_FID49886_recon.nii'
 
-        self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
         self.ute = np.array(nib.load(fute).get_data())
 
-    def maskRegister(self):
+        self.mask = CNNpredict(ute = self.ute)
+
+        pdb.set_trace()
+
+    def uteRegister(self):
         ## temporal usage
         from GX_utils import register
 
@@ -158,10 +164,6 @@ class GXSubject(object):
                                           bin_threshold = thre_rbc,
                                           mask          = self.mask_reg_vent,
                                           cor           = cor_TE90*cor_flipoff)
-
-
-
-
 
 if __name__ == "__main__":
     # if len(sys.argv) != 4:
