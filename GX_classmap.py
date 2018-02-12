@@ -22,9 +22,12 @@ class GXSubject(object):
 
         self.rbc = []
         self.barrier = []
-        self.gas_binning = []
+        self.ventilation = []
+        self.rbc2gas = []
+        self.bar2gas = []
+        self.ven_binning = []
         self.rbc2gas_binning = []
-        self.barrier2gas_binning = []
+        self.bar2gas_binning = []
 
         self.ute = []
         self.mask = []
@@ -125,7 +128,7 @@ class GXSubject(object):
         from GX_defineColormaps import thre_vent
         from GX_utils import gasBinning
 
-        self.gas_binning,self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso),
+        self.ventilation, self.ven_binning, self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso),
                                                          bin_threshold = thre_vent,
                                                          mask          = self.mask_reg,
                                                          percentile    = 0.99)
@@ -146,11 +149,11 @@ class GXSubject(object):
         cor_TE90 = np.exp(self.TE90/2000)/np.exp(self.TE90/50000)
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
 
-        self.barrier2gas_binning = disBinning(discomp    = self.barrier,
-                                           gas_highSNR   = abs(self.gas_highSNR),
-                                           bin_threshold = thre_bar,
-                                           mask          = self.mask_reg_vent,
-                                           cor           = cor_TE90*cor_flipoff)
+        self.bar2gas, self.bar2gas_binning = disBinning(discomp       = self.barrier,
+                                                        gas_highSNR   = abs(self.gas_highSNR),
+                                                        bin_threshold = thre_bar,
+                                                        mask          = self.mask_reg_vent,
+                                                        cor           = cor_TE90*cor_flipoff)
     def rbcBinning(self):
         ## binning for barrier
         from GX_defineColormaps import thre_rbc
@@ -159,11 +162,55 @@ class GXSubject(object):
         cor_TE90 = np.exp(self.TE90/2000)/np.exp(self.TE90/50000)
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
 
-        self.rbc2gas_binning = disBinning(discomp       = self.rbc,
-                                          gas_highSNR   = abs(self.gas_highSNR),
-                                          bin_threshold = thre_rbc,
-                                          mask          = self.mask_reg_vent,
-                                          cor           = cor_TE90*cor_flipoff)
+        self.rbc2gas, self.rbc2gas_binning = disBinning(discomp       = self.rbc,
+                                                        gas_highSNR   = abs(self.gas_highSNR),
+                                                        bin_threshold = thre_rbc,
+                                                        mask          = self.mask_reg_vent,
+                                                        cor           = cor_TE90*cor_flipoff)
+
+    def generateReport(self):
+        ## make montage, plot histogram, and generate report
+
+        from GX_utils import makeMontage, makeHistogram
+
+        from GX_defineColormaps import short_index2color, long_index2color, venhistogram, barhistogram, rbchistogram
+
+        ind_start = 22
+        ind_inter = 5
+
+        ## make montage
+        ven_montage = makeMontage(bin_index = self.ven_binning,
+                                  ute_reg  = self.ute_reg,
+                                  index2color = short_index2color,
+                                  ind_start = ind_start,
+                                  ind_inter = ind_inter)
+
+        bar_montage = makeMontage(bin_index = self.bar2gas_binning,
+                                  ute_reg = self.ute_reg,
+                                  index2color = long_index2color,
+                                  ind_start = ind_start,
+                                  ind_inter = ind_inter)
+
+        rbc_montage = makeMontage(bin_index = self.rbc2gas_binning,
+                                  ute_reg = self.ute_reg,
+                                  index2color = short_index2color,
+                                  ind_start = ind_start,
+                                  ind_inter = ind_inter)
+
+        ## make histogram
+        venhistogram['data'] = self.ventilation[self.mask_reg]
+        venhistogram['hist_name'] = 'ven_hist.png'
+        makeHistogram(**venhistogram)
+
+        barhistogram['data'] = self.bar2gas[self.mask_reg_vent]
+        barhistogram['hist_name'] = 'bar_hist.png'
+        makeHistogram(**barhistogram)
+
+        rbchistogram['data'] = self.rbc2gas[self.mask_reg_vent]
+        rbchistogram['hist_name'] = 'rbc_hist.png'
+        makeHistogram(**rbchistogram)
+
+
 
 if __name__ == "__main__":
     # if len(sys.argv) != 4:
