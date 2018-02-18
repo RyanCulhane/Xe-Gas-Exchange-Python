@@ -8,23 +8,6 @@ from matplotlib import pyplot as plt
 
 import pdb
 
-
-def binning(volume,thresholds):
-
-    # volume: mask_vented, thresholded 3D volume
-    # thresholds: just the middle thresholds
-
-    bvolume = np.ones(np.shape(volume))
-
-    bvolume[(volume > 0) & (volume <= thresholds[0])] = 2
-
-    for k in range(len(thresholds)-2):
-        bvolume[(volume > thresholds[k+1]) & (volume <= thresholds[k+2])] = k+3
-
-    bvolume[volume > thresholds[-1]] = len(thresholds)+2
-
-    return bvolume
-
 def dixonDecomp(gas_highSNR,dissolved,mask_vent,meanRbc2barrier):
 
     ## apply delta angfe from RBC:barrier ******************
@@ -59,8 +42,23 @@ def dixonDecomp(gas_highSNR,dissolved,mask_vent,meanRbc2barrier):
     # sitk.WriteImage(sitk_rbc,"rbc.nii")
     # sitk_barrier = sitk.GetImageFromArray(barrier)
     # sitk.WriteImage(sitk_barrier,"barrier.nii")
-    # pdb.set_trace()
     return rbc, barrier
+
+def binning(volume,thresholds):
+
+    # volume: mask_vented, thresholded 3D volume
+    # thresholds: just the middle thresholds
+
+    bvolume = np.ones(np.shape(volume))
+
+    bvolume[(volume > 0) & (volume <= thresholds[0])] = 2
+
+    for k in range(len(thresholds)-1):
+        bvolume[(volume > thresholds[k]) & (volume <= thresholds[k+1])] = k+3
+
+    bvolume[volume > thresholds[-1]] = len(thresholds)+2
+
+    return bvolume
 
 def gasBinning(gas_highreso,bin_threshold,mask,percentile):
     ## binning for gas
@@ -75,7 +73,7 @@ def gasBinning(gas_highreso,bin_threshold,mask,percentile):
     gas_binning = binning(gas_highreso_m, bin_threshold)
 
     # create ventilation mask
-    mask_vent = gas_binning
+    mask_vent = np.copy(gas_binning)
     mask_vent[mask_vent<3] = 0
     mask_vent[mask_vent>0] = 1
     mask_vent = mask_vent.astype(bool)
@@ -86,6 +84,9 @@ def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
 
     ## binning for rbc or barrier
     ground = 1e-5
+    ground_gas = 1e-15
+    # prevent divided by 0
+    gas_highSNR[(mask>0) & (gas_highSNR < ground_gas)] = ground_gas
 
     from GX_utils import binning
 
@@ -94,13 +95,33 @@ def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
     comp2gas[mask] = np.divide(discomp[mask],gas_highSNR[mask])
     comp2gas = np.multiply(comp2gas,cor)
 
-    comp2gas[comp2gas < ground] = ground
+    #set negative values
+    comp2gas[(mask > 0) & (comp2gas < ground)] = ground
 
     comp2gas_binning= binning(comp2gas, bin_threshold)
 
     return comp2gas, comp2gas_binning
 
-def register(gas_highreso,ute, mask):
+def binStats(rawdata, bindata, mask, key, recondata=None):
+
+    statsbox = {}
+    maskall = np.sum(mask)
+
+    statsbox[key+'_defect'] = np.divide(np.sum((bindata == 2)),maskall)
+    statsbox[key+'_low'] = np.divide(np.sum((bindata == 3)),maskall)
+    statsbox[key+'_mean'] = np.divide(np.sum((rawdata[mask])),maskall)
+
+    if (key == 'rbc')|(key == 'gas'):
+        statsbox[key+'_high'] = np.divide(np.sum((bindata == 6)|(bindata == 7)),maskall)
+    else:
+        statsbox[key+'_high'] = np.divide(np.sum((bindata == 8)|(bindata == 9)),maskall)
+
+    if (key == 'rbc')|(key == 'barrier'):
+        statsbox[key+'_negative'] = np.divide(np.sum((recondata < 0)),maskall)
+
+    return statsbox
+
+def register(gas_highreso, ute, mask):
 
     # register mask to gas_highreso, and apply the transform to UTE
 
@@ -145,7 +166,7 @@ def register(gas_highreso,ute, mask):
     transformixImageFilter.Execute()
 
     sitk_ute_reg = transformixImageFilter.GetResultImage()
-    sitk_ute_reg = sitk.PermuteAxes(sitk_ute_reg,[2,1,0])
+    # sitk_ute_reg = sitk.PermuteAxes(sitk_ute_reg,[2,1,0])
 
     np_ute_reg = sitk.GetArrayFromImage(sitk_ute_reg)
     # sitk.WriteImage(sitk_ute_reg,p_ute_recon+"_reg.nii")
@@ -175,6 +196,28 @@ def mergeRGBandGray(ute_slice,binning_slice):
 
     return colormap
 
+def fullMontage(X, colormap='gray'):
+    # used for debug, plot the entire montage
+    m, n, count = np.shape(X)
+    mm = int(np.ceil(np.sqrt(count)))
+    nn = mm
+    M = np.zeros((mm * m, nn * n))
+
+    image_id = 0
+    for j in range(mm):
+        for k in range(nn):
+            if image_id >= count:
+                break
+            sliceN, sliceM = j * m, k * n
+            M[sliceN:sliceN + n, sliceM:sliceM + m] = X[:, :, image_id]
+            image_id += 1
+
+    plt.figure()
+    plt.imshow(M, cmap=colormap)
+    plt.axis('off')
+    plt.show(block=False)
+    return M
+
 def montage(Img):
     ## plot montage(2*8) of Img
     ## Img has to have 16 slices
@@ -197,9 +240,14 @@ def montage(Img):
 
     return img_montage
 
-def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter):
+def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, mon_name):
     ## make montage (2*8) from binning map and ute image
     ## the montage will pick the image from ind_start
+    # normalize ute
+    ute_thre = np.percentile(ute_reg, 99)
+    ute_reg_m = np.divide(ute_reg,ute_thre)
+    ute_reg_m[ute_reg_m>1] = 1
+
     img_w,img_h,img_d = np.shape(bin_index)
 
     num_slice = 16
@@ -220,25 +268,35 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter):
         bin_rgb = np.reshape(bin_rgb,(img_w,img_h,3))
 
         ## merge bin_rgb with ute_reg through hsv colorspace
-        colorslice = mergeRGBandGray(ute_reg[:,:,k],bin_rgb)
+        colorslice = mergeRGBandGray(ute_reg_m[:,:,k],bin_rgb)
 
         colormap[:,:,ind_slice,:] = colorslice
         ind_slice = ind_slice + 1
 
     ## make montage from the image stack
     img_montage = montage(colormap)
+
+    ## plot and save the montage
+    plt.imshow(img_montage)
+    plt.axis('off')
+    plt.savefig(mon_name,transparent = True,bbox_inches='tight',pad_inches=-0.1)
+
     return img_montage
 
 def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     ## plot histogram for the gas exchange ratio maps
     # make a thick frame
-    rc('axes', linewidth=2)
+    from matplotlib.pyplot import rc, xlim, ylim
 
-    fig, ax = plt.subplots()
+    rc('axes', linewidth=4)
+
+    fig, ax = plt.subplots(figsize=(9, 6))
 
     # the histogram of the data
+    # limit the range of data
     data = data.flatten()
     data[data<0] = 0
+    data[data>x_lim] = x_lim
     data = np.append(data, x_lim)
 
     weights = np.ones_like(data)/float(len(data))
@@ -251,16 +309,22 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     ax.plot(bins, normal, '--',color='k',linewidth=4)
 
     # ax.set_xlabel('Pixel Intensity', fontsize=26)
-    ax.set_ylabel('Fraction of total pixels',fontsize=26)
+    ax.set_ylabel('Fraction of Total Pixels',fontsize=35)
     xlim((0,x_lim))
     ylim((0,y_lim))
 
-    for tick in ax.xaxis.get_major_ticks():
-        tick.label1.set_fontsize(18)
-        # tick.label1.set_fontweight('bold')
-    for tick in ax.yaxis.get_major_ticks():
-        tick.label1.set_fontsize(18)
-        # tick.label1.set_fontweight('bold')
+    plt.locator_params(axis='x', nbins=4, nticks=4)
+
+    # barrier add a tick on the end
+    if((hist_name == 'bar_hist.png')):
+        xticks = [0.0, 0.5, 1.0, 1.5, 1.8]
+        ticklabels = ['0.0', '0.5', '1.0','1.5','1.8']
+        plt.xticks(xticks, ticklabels)
+
+    plt.locator_params(axis='y', nbins=4, nticks=4)
+    plt.xticks(fontsize=30)
+    plt.yticks(fontsize=30)
+
 
     # Tweak spacing to prevent clipping of ylabel
     fig.tight_layout()

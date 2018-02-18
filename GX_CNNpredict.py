@@ -40,7 +40,7 @@ def CNNpredict(ute):
     for i in range(0,img_d):
         ute_slice = np.fliplr(np.flipud(ute[:,:,i]))
 
-        ute_thre = np.percentile(ute_slice, 0.99)
+        ute_thre = np.percentile(ute_slice, 99)
 
         ute_slice = np.divide(ute_slice,ute_thre)
 
@@ -52,15 +52,17 @@ def CNNpredict(ute):
         mask_slice = autoencoder.predict(np.reshape(ute_slice,(1,img_w,img_h,1)))
         mask_slice = de_label_map(mask_slice)
 
+        mask_slice = np.fliplr(np.flipud(mask_slice))
+
         mask[:,:,i] = mask_slice
 
-        plt.subplot(1,2,1)
-        plt.imshow(mask_slice, origin="upper")
-        plt.subplot(1,2,2)
-        plt.imshow(ute_slice, origin="upper")
-
-        saveStr='Segment_'+str(i)+'.png'
-        plt.savefig(saveStr)
+        # plt.subplot(1,2,1)
+        # plt.imshow(mask_slice, origin="upper")
+        # plt.subplot(1,2,2)
+        # plt.imshow(ute_slice, origin="upper")
+        #
+        # saveStr='Segment_'+str(i)+'.png'
+        # plt.savefig(saveStr)
 
     mask = mask.astype(bool)
 

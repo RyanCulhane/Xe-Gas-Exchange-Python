@@ -3,6 +3,7 @@ import numpy as np
 import nibabel as nib
 import scipy.io as sio
 import sys
+import time
 
 from matplotlib import pyplot as plt
 
@@ -11,6 +12,7 @@ import pdb
 class GXSubject(object):
     def __init__(self):
         print("Initiate subject 002102. Today is a beautiful day!")
+        time_start = time.time()
         self.filename = []
         self.RBC2barrier = 0.468
         self.subjectID = []
@@ -36,13 +38,14 @@ class GXSubject(object):
         self.mask_reg_vent = []
 
         self.key_box = {}
-        self.stats = {}
+        self.stats_box = {}
 
         print("read in Xe data")
         self.readinXe()
 
         print("mask processing")
         self.uteSegmentation()
+        self.alignImages()
         # print("check alignemnt")
         # self.checkAlignment()
         self.uteRegister()
@@ -55,7 +58,14 @@ class GXSubject(object):
         self.barBinning()
         self.rbcBinning()
 
+        self.generateStats()
+
         print("Clnical Report")
+        self.generateReport()
+
+        time_end = time.time()
+        print('*********************finished program')
+        print(time_end - time_start)
 
     def checkAlignment(self):
         # check if all the images are the same alignment
@@ -113,7 +123,16 @@ class GXSubject(object):
 
         self.mask = CNNpredict(ute = self.ute)
 
-        pdb.set_trace()
+    def alignImages(self):
+
+        def alignrot(x):
+            return(np.flip(np.flip(np.flip(x,0),1),2))
+
+        self.ute = alignrot(self.ute)
+        self.mask = alignrot(self.mask)
+        self.gas_highreso = alignrot(self.gas_highreso)
+        self.gas_highSNR = alignrot(self.gas_highSNR)
+        self.dissolved = alignrot(self.dissolved)
 
     def uteRegister(self):
         ## temporal usage
@@ -129,9 +148,9 @@ class GXSubject(object):
         from GX_utils import gasBinning
 
         self.ventilation, self.ven_binning, self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso),
-                                                         bin_threshold = thre_vent,
-                                                         mask          = self.mask_reg,
-                                                         percentile    = 0.99)
+                                                                            bin_threshold = thre_vent,
+                                                                            mask          = self.mask_reg,
+                                                                            percentile    = 99)
 
     def dixonDecomp(self):
         ## Dixon decomposition to get rbc and barrier from dissolved
@@ -168,6 +187,18 @@ class GXSubject(object):
                                                         mask          = self.mask_reg_vent,
                                                         cor           = cor_TE90*cor_flipoff)
 
+    def generateStats(self):
+        ## calculate statistics
+        from GX_utils import binStats
+
+        gas_stats = binStats(rawdata = self.gas_highreso, bindata = self.ven_binning, mask = self.mask_reg, key = 'gas')
+        barrier_stats = binStats(rawdata = self.bar2gas, bindata = self.rbc2gas_binning, mask = self.mask_reg, key = 'barrier', recondata=self.barrier)
+        rbc_stats = binStats(rawdata = self.rbc2gas, bindata = self.bar2gas_binning, mask = self.mask_reg, key = 'rbc', recondata=self.rbc)
+
+        self.stats_box = gas_stats
+        self.stats_box.update(barrier_stats)
+        self.stats_box.update(rbc_stats)
+
     def generateReport(self):
         ## make montage, plot histogram, and generate report
 
@@ -175,7 +206,7 @@ class GXSubject(object):
 
         from GX_defineColormaps import short_index2color, long_index2color, venhistogram, barhistogram, rbchistogram
 
-        ind_start = 22
+        ind_start = 16
         ind_inter = 5
 
         ## make montage
@@ -183,19 +214,22 @@ class GXSubject(object):
                                   ute_reg  = self.ute_reg,
                                   index2color = short_index2color,
                                   ind_start = ind_start,
-                                  ind_inter = ind_inter)
+                                  ind_inter = ind_inter,
+                                  mon_name = 'ven_montage.png')
 
         bar_montage = makeMontage(bin_index = self.bar2gas_binning,
                                   ute_reg = self.ute_reg,
                                   index2color = long_index2color,
                                   ind_start = ind_start,
-                                  ind_inter = ind_inter)
+                                  ind_inter = ind_inter,
+                                  mon_name = 'bar_montage.png')
 
         rbc_montage = makeMontage(bin_index = self.rbc2gas_binning,
                                   ute_reg = self.ute_reg,
                                   index2color = short_index2color,
                                   ind_start = ind_start,
-                                  ind_inter = ind_inter)
+                                  ind_inter = ind_inter,
+                                  mon_name = 'rbc_montage.png')
 
         ## make histogram
         venhistogram['data'] = self.ventilation[self.mask_reg]
@@ -227,5 +261,6 @@ if __name__ == "__main__":
     # output_file = sys.argv[3]
 
     # Create helper object
+    from GX_utils import fullMontage
     subject = GXSubject()
     pdb.set_trace()
