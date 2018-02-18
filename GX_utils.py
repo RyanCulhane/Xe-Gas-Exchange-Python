@@ -102,25 +102,6 @@ def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
 
     return comp2gas, comp2gas_binning
 
-def binStats(rawdata, bindata, mask, key, recondata=None):
-
-    statsbox = {}
-    maskall = np.sum(mask)
-
-    statsbox[key+'_defect'] = np.divide(np.sum((bindata == 2)),maskall)
-    statsbox[key+'_low'] = np.divide(np.sum((bindata == 3)),maskall)
-    statsbox[key+'_mean'] = np.divide(np.sum((rawdata[mask])),maskall)
-
-    if (key == 'rbc')|(key == 'gas'):
-        statsbox[key+'_high'] = np.divide(np.sum((bindata == 6)|(bindata == 7)),maskall)
-    else:
-        statsbox[key+'_high'] = np.divide(np.sum((bindata == 8)|(bindata == 9)),maskall)
-
-    if (key == 'rbc')|(key == 'barrier'):
-        statsbox[key+'_negative'] = np.divide(np.sum((recondata < 0)),maskall)
-
-    return statsbox
-
 def register(gas_highreso, ute, mask):
 
     # register mask to gas_highreso, and apply the transform to UTE
@@ -329,3 +310,89 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     # Tweak spacing to prevent clipping of ylabel
     fig.tight_layout()
     plt.savefig(hist_name)
+
+def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
+
+    statsbox = {}
+    maskall = np.sum(mask_all).astype('float')
+
+    statsbox[key+'_defect'] = np.divide(np.sum((bindata == 2)),maskall)
+    statsbox[key+'_low'] = np.divide(np.sum((bindata == 3)),maskall)
+    statsbox[key+'_mean'] = np.average(abs(rawdata[mask]))
+
+    if (key == 'rbc')|(key == 'ven'):
+        statsbox[key+'_high'] = np.divide(np.sum((bindata == 6)|(bindata == 7)),maskall)
+    else:
+        statsbox[key+'_high'] = np.divide(np.sum((bindata == 8)|(bindata == 9)),maskall)
+
+    if (key == 'rbc')|(key == 'bar'):
+        statsbox[key+'_negative'] = np.divide(np.sum((recondata < 0)&(mask > 0)),maskall)
+
+    return statsbox
+
+def genHtml(subject_ID, RBC2barrier, stats_box):
+    # reder html using the templates and stats
+    html_temp = "report_temp.html"
+    css_temp = "report_style_temp.css"
+    css_render = "report_style.css"
+    output = "clinical_report.html"
+
+    def adj_format1(x):
+        num = np.around((x)*100,decimals=0).astype(int)
+        if((num==0)):
+            return '<1'
+        else:
+            return num.astype(str)
+
+    def adj_format2(x):
+        return np.around(x,decimals=2).astype(str)
+
+
+    html_parameters = {
+        'Subject_ID': subject_ID,
+        'inflation': np.around(stats_box['inflation'],decimals=0).astype(int),
+        'RBC2barrier': RBC2barrier,
+        'ven_defect': adj_format1(stats_box['ven_defect']),
+        'ven_low': adj_format1(stats_box['ven_low']),
+        'ven_high': adj_format1(stats_box['ven_high']),
+        'ven_mean': adj_format2(stats_box['ven_mean']),
+        'ven_SNR': 0,
+        'bar_defect': adj_format1(stats_box['bar_defect']),
+        'bar_low': adj_format1(stats_box['bar_low']),
+        'bar_high': adj_format1(stats_box['bar_high']),
+        'bar_mean': adj_format2(stats_box['bar_mean']),
+        'bar_SNR': 0,
+        'bar_negative': adj_format1(stats_box['bar_negative']),
+        'rbc_defect': adj_format1(stats_box['rbc_defect']),
+        'rbc_low': adj_format1(stats_box['rbc_low']),
+        'rbc_high': adj_format1(stats_box['rbc_high']),
+        'rbc_mean': adj_format2(stats_box['rbc_mean']),
+        'rbc_SNR': 0,
+        'rbc_negative': adj_format1(stats_box['rbc_negative']),
+
+        'ven_montage':'ven_montage.png',
+        'bar_montage':'bar_montage.png',
+        'rbc_montage':'rbc_montage.png',
+    }
+
+    css_parameters = {
+        'ven_hist':'ven_hist.png',
+        'bar_hist':'bar_hist.png',
+        'rbc_hist':'rbc_hist.png'
+    }
+
+    # render css file first
+    with open(css_temp, 'r') as f:
+        data = f.read()
+        rendered = data.format(**css_parameters)
+
+    with open(css_render, 'w') as o:
+        o.write(rendered)
+
+    # reder html second
+    with open(html_temp, 'r') as f:
+        data = f.read()
+        rendered = data.format(**html_parameters)
+
+    with open(output, 'w') as o:
+        o.write(rendered)

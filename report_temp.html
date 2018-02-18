@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link href="report_reset.css" rel="stylesheet">
+        <link href="report_style.css" rel="stylesheet">
+        <title>Gas Exchange Report</title>
+    </head>
+    <body>
+        <h1 id='big-title'>Gas Exchange Summary for {Subject_ID}</h1>
+        <h2 id='sub-title'>RBC:Barrier = {RBC2barrier}, Inflation = {inflation}cc</h2>
+        <div class='main-container'>
+            <div class="map-tile black">
+                <div>
+                    <h2>Ventilation</h2>
+                    <img src={ven_montage}>
+                </div>
+                <div class='colormap-title'>
+                    <img src="colorbin_short.png" height="30">
+                    <h2>Barrier:gas</h2>
+                </div>
+                <div class='numbers' align='right'>
+                    <p>Defect: {ven_defect}%, Low: {ven_low}%</p>
+                    <p>High: {ven_high}%</p>
+                </div>
+                <div>
+                    <img src={bar_montage}>
+                </div>
+                <div class='colormap-title'>
+                    <img src="colorbin_long.png" height="30">
+                    <h2>RBC:gas</h2>
+                </div>
+                <div class='numbers' align='right'>
+                    <p>Defect: {bar_defect}%, Low: {bar_low}%</p>
+                    <p>High: {bar_high}%</p>
+                </div>
+                <div>
+                    <img src={rbc_montage}>
+                </div>
+                <div class='colormap-title-rbc'>
+                    <img src="colorbin_short.png" height="30">
+                </div>
+                <div class='numbers' align='right'>
+                    <p>Defect: {rbc_defect}%, Low: {rbc_low}%</p>
+                    <p>High: {rbc_high}%</p>
+                </div>
+            </div>
+            <div class="hist-tile ven-hist" align='right'>
+                <p>Mean: {ven_mean}</p>
+                <p>SNR: {ven_SNR}</p>
+            </div>
+            <div class="hist-tile bar-hist" align='right'>
+                <p>Mean: {bar_mean}</p>
+                <p>SNR: {bar_SNR}</p>
+                <p>Negative: {bar_negative}%</p>
+            </div>
+            <div class="hist-tile rbc-hist" align='right'>
+                <p>Mean: {rbc_mean}</p>
+                <p>SNR: {rbc_SNR}</p>
+                <p>Negative: {rbc_negative}%</p>
+            </div>
+        </div>
+    </body>
+</html>

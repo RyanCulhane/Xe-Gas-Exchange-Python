@@ -15,8 +15,9 @@ class GXSubject(object):
         time_start = time.time()
         self.filename = []
         self.RBC2barrier = 0.468
-        self.subjectID = []
+        self.subjectID = '005-012'
         self.TE90 = 460
+        self.FOV = 40.0
 
         self.gas_highreso = []
         self.gas_highSNR = []
@@ -61,7 +62,8 @@ class GXSubject(object):
         self.generateStats()
 
         print("Clnical Report")
-        self.generateReport()
+        self.generateFigures()
+        self.generateHtml()
 
         time_end = time.time()
         print('*********************finished program')
@@ -191,15 +193,34 @@ class GXSubject(object):
         ## calculate statistics
         from GX_utils import binStats
 
-        gas_stats = binStats(rawdata = self.gas_highreso, bindata = self.ven_binning, mask = self.mask_reg, key = 'gas')
-        barrier_stats = binStats(rawdata = self.bar2gas, bindata = self.rbc2gas_binning, mask = self.mask_reg, key = 'barrier', recondata=self.barrier)
-        rbc_stats = binStats(rawdata = self.rbc2gas, bindata = self.bar2gas_binning, mask = self.mask_reg, key = 'rbc', recondata=self.rbc)
+        gas_stats = binStats(rawdata = self.ventilation,
+                             bindata = self.ven_binning,
+                             mask = self.mask_reg,
+                             mask_all=self.mask_reg,
+                             key = 'ven')
+
+        # the percentage is calculated by all mask, while the mean is calculated with the vent mask
+        barrier_stats = binStats(rawdata = self.bar2gas,
+                                 bindata = self.rbc2gas_binning,
+                                 mask = self.mask_reg_vent,
+                                 mask_all = self.mask_reg,
+                                 key = 'bar',
+                                 recondata=self.barrier)
+
+        # the percentage is calculated by all mask, while the mean is calculated with the vent mask
+        rbc_stats = binStats(rawdata = self.rbc2gas,
+                             bindata = self.bar2gas_binning,
+                             mask = self.mask_reg_vent,
+                             mask_all = self.mask_reg,
+                             key = 'rbc',
+                             recondata=self.rbc)
 
         self.stats_box = gas_stats
         self.stats_box.update(barrier_stats)
         self.stats_box.update(rbc_stats)
+        self.stats_box['inflation'] = np.multiply(np.sum(self.mask_reg),self.FOV**3/np.shape(self.mask_reg)[0]**3).astype(int)
 
-    def generateReport(self):
+    def generateFigures(self):
         ## make montage, plot histogram, and generate report
 
         from GX_utils import makeMontage, makeHistogram
@@ -244,6 +265,11 @@ class GXSubject(object):
         rbchistogram['hist_name'] = 'rbc_hist.png'
         makeHistogram(**rbchistogram)
 
+    def generateHtml(self):
+
+        from GX_utils import genHtml
+
+        genHtml(subject_ID = self.subjectID, RBC2barrier = self.RBC2barrier, stats_box = self.stats_box)
 
 
 if __name__ == "__main__":

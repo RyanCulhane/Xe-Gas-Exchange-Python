@@ -1,0 +1,80 @@
+body {{
+  background-color:white;
+  font-family: palatino;
+  font-weight: bold;
+  color: black;
+}}
+.main-container{{
+    width:1200px;
+    margin-left:auto;
+    margin-right:auto;
+    padding: 0px;
+    border: 0px;
+}}
+#big-title{{
+    width:1180px;
+    font-size: 20pt;
+    margin: 10px auto;
+    float:none;
+}}
+
+#sub-title{{
+    width:1180px;
+    font-size: 15pt;
+    margin: 10px auto;
+    float:none;
+    color:dimgray;
+}}
+
+h2 {{
+    font-size: 18pt;
+    margin-bottom: 15px;
+}}
+.map-tile{{
+    width:700px;
+    color:white;
+    margin:10px;
+    padding:10px;
+    overflow:hidden;
+    float:left;
+}}
+.colormap-title{{
+    height:60px;
+    width:300px;
+    float:left;
+}}
+.colormap-title-rbc{{
+    height:45px;
+    width:300px;
+    float:left;
+}}
+.numbers{{
+    font-size:16pt;
+    padding:2pt;
+    height:45px;
+    width:380px;
+    float:left;
+}}
+
+.black {{
+    background-color:black;
+}}
+
+.hist-tile {{
+    width:310px;
+    height: 190px;
+    padding:30px;
+    background-size:contain;
+    font-size: 16pt;
+    float:left;
+}}
+
+.ven-hist{{
+    background-image:url({ven_hist});
+}}
+.bar-hist{{
+    background-image:url({bar_hist});
+}}
+.rbc-hist{{
+    background-image:url({rbc_hist});
+}}
