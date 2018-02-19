@@ -4,6 +4,9 @@ import scipy.io as sio
 import SimpleITK as sitk
 from skimage import color
 import warnings
+import math
+from scipy.ndimage.morphology import binary_dilation
+
 from matplotlib import pyplot as plt
 
 import pdb
@@ -316,6 +319,65 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     fig.tight_layout()
     plt.savefig(hist_name)
 
+def fSNR_3T(image,mask):
+
+    # x-y border exclusion
+    xybe = 0
+    mini_cube_dim = [8,8,8]
+
+    my_dim = np.shape(image)
+
+    # dilate the mask to analyze noise area away from the signal
+    def util(x):
+        return int((math.ceil(x*0.025)*2+1))
+
+    dilate_struct = np.ones((util(my_dim[0]), util(my_dim[1]), util(my_dim[2])))
+    noise_mask = binary_dilation(mask,dilate_struct).astype(bool)
+
+    # exclue border too
+    if(xybe>0):
+        noise_mask[0:xybe,:,:] = True
+        noise_mask[-xybe:,:,:] = True
+        noise_mask[:,0:xybe,:] = True
+        noise_mask[:,-xybe:,:] = True
+
+    noise_temp = np.copy(image)
+    noise_temp[noise_mask] = np.nan
+
+    # set up for using mini noise cubes to go through the image and calculate std for noise
+    (mini_x,mini_y,mini_z) = mini_cube_dim
+
+    n_noise_vox = mini_x*mini_y*mini_z
+
+    mini_vox_std = 0.75*n_noise_vox # minimul number of voxels to calculate std
+
+    stepper = 0
+    total = 0
+    std_dev_mini_noise_vol = []
+
+    for ii in range(0, my_dim[0]/mini_x):
+        for jj in range(0, my_dim[1]/mini_y):
+            for kk in range(0, my_dim[2]/mini_z):
+
+                mini_cube_noise_dist = noise_temp[ii*mini_x:(ii+1)*mini_x, jj*mini_y:(jj+1)*mini_y, kk*mini_z:(kk+1)*mini_z]
+
+                mini_cube_noise_dist = mini_cube_noise_dist[~np.isnan(mini_cube_noise_dist)]
+
+                # only calculate std for the noise when it is long enough
+                if(len(mini_cube_noise_dist)>mini_vox_std):
+                    std_dev_mini_noise_vol.append(np.std(mini_cube_noise_dist,ddof=1))
+                    stepper = stepper+1
+
+                total = total+1
+
+    image_noise = np.median(std_dev_mini_noise_vol)
+    image_signal = np.average(image[mask])
+
+    SNR = image_signal/image_noise
+    SNR_Rayleigh = SNR*0.66
+
+    return SNR, SNR_Rayleigh, image_signal, image_noise
+
 def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
     statsbox = {}
@@ -332,6 +394,10 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
     if ((key == 'rbc')|(key == 'bar')):
         statsbox[key+'_negative'] = np.divide(np.sum((recondata < 0)&(mask > 0)),maskall)
+        statsbox[key+'_SNR'],_,_,_ = fSNR_3T(recondata, mask_all)
+    else:
+        _, SNR_Rayleigh, _, _ = fSNR_3T(recondata, mask_all)
+        statsbox[key+'_SNR'] = SNR_Rayleigh
 
     return statsbox
 
@@ -355,23 +421,23 @@ def genHtmlPdf(subject_ID, RBC2barrier, stats_box):
     html_parameters = {
         'Subject_ID': subject_ID,
         'inflation': np.around(stats_box['inflation'],decimals=0).astype(int),
-        'RBC2barrier': RBC2barrier,
+        'RBC2barrier': np.around(RBC2barrier,decimals=3).astype(str),
         'ven_defect': adj_format1(stats_box['ven_defect']),
         'ven_low': adj_format1(stats_box['ven_low']),
         'ven_high': adj_format1(stats_box['ven_high']),
         'ven_mean': adj_format2(stats_box['ven_mean']),
-        'ven_SNR': 0,
+        'ven_SNR': adj_format2(stats_box['ven_SNR']),
         'bar_defect': adj_format1(stats_box['bar_defect']),
         'bar_low': adj_format1(stats_box['bar_low']),
         'bar_high': adj_format1(stats_box['bar_high']),
         'bar_mean': adj_format2(stats_box['bar_mean']),
-        'bar_SNR': 0,
+        'bar_SNR': adj_format2(stats_box['bar_SNR']),
         'bar_negative': adj_format1(stats_box['bar_negative']),
         'rbc_defect': adj_format1(stats_box['rbc_defect']),
         'rbc_low': adj_format1(stats_box['rbc_low']),
         'rbc_high': adj_format1(stats_box['rbc_high']),
         'rbc_mean': adj_format2(stats_box['rbc_mean']),
-        'rbc_SNR': 0,
+        'rbc_SNR': adj_format2(stats_box['rbc_SNR']),
         'rbc_negative': adj_format1(stats_box['rbc_negative']),
 
         'ven_montage':'ven_montage.png',

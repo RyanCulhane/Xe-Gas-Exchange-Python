@@ -199,7 +199,8 @@ class GXSubject(object):
                              bindata = self.ven_binning,
                              mask = self.mask_reg,
                              mask_all=self.mask_reg,
-                             key = 'ven')
+                             key = 'ven',
+                             recondata=abs(self.gas_highreso)) # for SNR
 
         # the percentage is calculated by all mask, while the mean is calculated with the vent mask
         barrier_stats = binStats(rawdata = self.bar2gas,
