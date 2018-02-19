@@ -14,7 +14,7 @@ class GXSubject(object):
         print("Initiate subject 002102. Today is a beautiful day!")
         time_start = time.time()
         self.filename = []
-        self.RBC2barrier = 0.468
+        self.RBC2barrier = 0.457
         self.subjectID = '005-012'
         self.TE90 = 460
         self.FOV = 40.0
@@ -41,27 +41,26 @@ class GXSubject(object):
         self.key_box = {}
         self.stats_box = {}
 
-        print("read in Xe data")
+        print("*********************Read in 129Xe data")
         self.readinXe()
 
-        print("mask processing")
+        print("*********************Mask Segmentation")
         self.uteSegmentation()
         self.alignImages()
-        # print("check alignemnt")
         # self.checkAlignment()
         self.uteRegister()
 
-        print("Gas_highreso binning and mask_vent")
+        print("*********************Gas_highreso binning and mask_vent")
         self.gasBinning()
 
-        print("Dixon and binning")
+        print("*********************Dixon and binning")
         self.dixonDecomp()
         self.barBinning()
         self.rbcBinning()
 
         self.generateStats()
 
-        print("Clnical Report")
+        print("*********************Clnical Report")
         self.generateFigures()
         self.generateHtmlPdf()
 
@@ -123,7 +122,9 @@ class GXSubject(object):
 
         self.ute = np.array(nib.load(fute).get_data())
 
-        self.mask = CNNpredict(ute = self.ute)
+        # self.mask = CNNpredict(ute = self.ute)
+        fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 
@@ -167,7 +168,7 @@ class GXSubject(object):
         from GX_defineColormaps import thre_bar
         from GX_utils import disBinning
 
-        cor_TE90 = np.exp(self.TE90/2000)/np.exp(self.TE90/50000)
+        cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
 
         self.bar2gas, self.bar2gas_binning = disBinning(discomp       = self.barrier,
@@ -175,6 +176,7 @@ class GXSubject(object):
                                                         bin_threshold = thre_bar,
                                                         mask          = self.mask_reg_vent,
                                                         cor           = cor_TE90*cor_flipoff)
+
     def rbcBinning(self):
         ## binning for barrier
         from GX_defineColormaps import thre_rbc
@@ -201,7 +203,7 @@ class GXSubject(object):
 
         # the percentage is calculated by all mask, while the mean is calculated with the vent mask
         barrier_stats = binStats(rawdata = self.bar2gas,
-                                 bindata = self.rbc2gas_binning,
+                                 bindata = self.bar2gas_binning,
                                  mask = self.mask_reg_vent,
                                  mask_all = self.mask_reg,
                                  key = 'bar',
@@ -209,7 +211,7 @@ class GXSubject(object):
 
         # the percentage is calculated by all mask, while the mean is calculated with the vent mask
         rbc_stats = binStats(rawdata = self.rbc2gas,
-                             bindata = self.bar2gas_binning,
+                             bindata = self.rbc2gas_binning,
                              mask = self.mask_reg_vent,
                              mask_all = self.mask_reg,
                              key = 'rbc',
@@ -227,7 +229,7 @@ class GXSubject(object):
 
         from GX_defineColormaps import short_index2color, long_index2color, venhistogram, barhistogram, rbchistogram
 
-        ind_start = 16
+        ind_start = 10
         ind_inter = 5
 
         ## make montage

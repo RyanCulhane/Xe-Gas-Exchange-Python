@@ -296,15 +296,20 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
 
     plt.locator_params(axis='x', nbins=4, nticks=4)
 
-    # barrier add a tick on the end
+    # barrier/RBC add a tick on the end
     if((hist_name == 'bar_hist.png')):
-        xticks = [0.0, 0.5, 1.0, 1.5, 1.8]
-        ticklabels = ['0.0', '0.5', '1.0','1.5','1.8']
+        xticks = [0.0, 1.0, 2.0, 2.5]
+        ticklabels = ['0.0', '1.0','2.0','2.5']
+        plt.xticks(xticks, ticklabels)
+
+    if((hist_name == 'rbc_hist.png')):
+        xticks = [0.0, 0.5, 1.0, 1.2]
+        ticklabels = ['0.0', '0.5', '1.0','1.2']
         plt.xticks(xticks, ticklabels)
 
     plt.locator_params(axis='y', nbins=4, nticks=4)
-    plt.xticks(fontsize=30)
-    plt.yticks(fontsize=30)
+    plt.xticks(fontsize=40)
+    plt.yticks(fontsize=40)
 
 
     # Tweak spacing to prevent clipping of ylabel
@@ -320,12 +325,12 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
     statsbox[key+'_low'] = np.divide(np.sum((bindata == 3)),maskall)
     statsbox[key+'_mean'] = np.average(abs(rawdata[mask]))
 
-    if (key == 'rbc')|(key == 'ven'):
+    if ((key == 'rbc')|(key == 'ven')):
         statsbox[key+'_high'] = np.divide(np.sum((bindata == 6)|(bindata == 7)),maskall)
     else:
         statsbox[key+'_high'] = np.divide(np.sum((bindata == 8)|(bindata == 9)),maskall)
 
-    if (key == 'rbc')|(key == 'bar'):
+    if ((key == 'rbc')|(key == 'bar')):
         statsbox[key+'_negative'] = np.divide(np.sum((recondata < 0)&(mask > 0)),maskall)
 
     return statsbox

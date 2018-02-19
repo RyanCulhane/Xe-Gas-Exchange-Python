@@ -63,7 +63,7 @@ short_index2color = {
 ## parameters for histograms
 rbchistogram = {
         'color': (0.8941,0.1020,0.1098),
-        'x_lim': 0.8,
+        'x_lim': 1.2,
         'y_lim': 0.1,
         'num_bins': 50,
         'refer_fit': (0.06106, 0.2604, 0.1481)
@@ -71,7 +71,7 @@ rbchistogram = {
 
 barhistogram = {
         'color': (0.4,0.7608,0.6471),
-        'x_lim': 1.8,
+        'x_lim': 2.5,
         'y_lim': 0.18,
         'num_bins': 70,
         'refer_fit': (0.07006, 0.4632, 0.1953)
