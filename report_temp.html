@@ -2,12 +2,14 @@
 <html>
     <head>
         <meta charset="utf-8">
+        <meta name="description" content="Gas Exchange Report with 129Xe MRI">
+        <meta name="author" content="Ziyi Wang">
         <link href="report_reset.css" rel="stylesheet">
         <link href="report_style.css" rel="stylesheet">
         <title>Gas Exchange Report</title>
     </head>
     <body>
-        <h1 id='big-title'>Gas Exchange Summary for {Subject_ID}</h1>
+        <h1 id='big-title'>Gas Exchange Summary of Subject {Subject_ID}</h1>
         <h2 id='sub-title'>RBC:Barrier = {RBC2barrier}, Inflation = {inflation}cc</h2>
         <div class='main-container'>
             <div class="map-tile black">
@@ -45,19 +47,28 @@
                     <p>High: {rbc_high}%</p>
                 </div>
             </div>
-            <div class="hist-tile ven-hist" align='right'>
-                <p>Mean: {ven_mean}</p>
-                <p>SNR: {ven_SNR}</p>
+            <div class="hist-tile" align='right'>
+                <img src={ven_hist} style="width:100%;">
+                <div class="top-right">
+                  <p>Mean: {ven_mean}</p>
+                  <p>SNR: {ven_SNR}</p>
+                </div>
             </div>
-            <div class="hist-tile bar-hist" align='right'>
-                <p>Mean: {bar_mean}</p>
-                <p>SNR: {bar_SNR}</p>
-                <p>Negative: {bar_negative}%</p>
+            <div class="hist-tile" align='right'>
+                <img src={bar_hist} style="width:100%;">
+                <div class="top-right">
+                    <p>Mean: {bar_mean}</p>
+                    <p>SNR: {bar_SNR}</p>
+                    <p>Negative: {bar_negative}%</p>
+                </div>
             </div>
-            <div class="hist-tile rbc-hist" align='right'>
-                <p>Mean: {rbc_mean}</p>
-                <p>SNR: {rbc_SNR}</p>
-                <p>Negative: {rbc_negative}%</p>
+            <div class="hist-tile" align='right'>
+                <img src={rbc_hist} style="width:100%;">
+                <div class="top-right">
+                    <p>Mean: {rbc_mean}</p>
+                    <p>SNR: {rbc_SNR}</p>
+                    <p>Negative: {rbc_negative}%</p>
+                </div>
             </div>
         </div>
     </body>

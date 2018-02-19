@@ -1,80 +1,76 @@
-body {{
+body {
   background-color:white;
   font-family: palatino;
   font-weight: bold;
   color: black;
-}}
-.main-container{{
-    width:1200px;
+}
+.main-container{
+    width:1090px;
     margin-left:auto;
     margin-right:auto;
     padding: 0px;
     border: 0px;
-}}
-#big-title{{
-    width:1180px;
+}
+#big-title{
+    width:1090px;
     font-size: 20pt;
     margin: 10px auto;
     float:none;
-}}
+}
 
-#sub-title{{
-    width:1180px;
+#sub-title{
+    width:1090px;
     font-size: 15pt;
     margin: 10px auto;
     float:none;
     color:dimgray;
-}}
+}
 
-h2 {{
+h2 {
     font-size: 18pt;
     margin-bottom: 15px;
-}}
-.map-tile{{
+}
+.map-tile{
     width:700px;
     color:white;
     margin:10px;
     padding:10px;
     overflow:hidden;
     float:left;
-}}
-.colormap-title{{
+}
+.colormap-title{
     height:60px;
     width:300px;
     float:left;
-}}
-.colormap-title-rbc{{
+}
+.colormap-title-rbc{
     height:45px;
     width:300px;
     float:left;
-}}
-.numbers{{
+}
+.numbers{
     font-size:16pt;
     padding:2pt;
     height:45px;
     width:380px;
     float:left;
-}}
+}
 
-.black {{
+.black {
     background-color:black;
-}}
+}
 
-.hist-tile {{
-    width:310px;
-    height: 190px;
-    padding:30px;
-    background-size:contain;
+.top-right {
+    position:relative;
+    top: -210px;
+    right: 25px;
+}
+.hist-tile {
+    width:350px;
+    height: 250px;
+    padding:0px;
+    margin:0px;
+    border:0px;
     font-size: 16pt;
-    float:left;
-}}
-
-.ven-hist{{
-    background-image:url({ven_hist});
-}}
-.bar-hist{{
-    background-image:url({bar_hist});
-}}
-.rbc-hist{{
-    background-image:url({rbc_hist});
-}}
+    float:left
+}

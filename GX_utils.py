@@ -330,11 +330,10 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
     return statsbox
 
-def genHtml(subject_ID, RBC2barrier, stats_box):
+def genHtmlPdf(subject_ID, RBC2barrier, stats_box):
     # reder html using the templates and stats
     html_temp = "report_temp.html"
-    css_temp = "report_style_temp.css"
-    css_render = "report_style.css"
+
     output = "clinical_report.html"
 
     def adj_format1(x):
@@ -373,21 +372,11 @@ def genHtml(subject_ID, RBC2barrier, stats_box):
         'ven_montage':'ven_montage.png',
         'bar_montage':'bar_montage.png',
         'rbc_montage':'rbc_montage.png',
-    }
 
-    css_parameters = {
         'ven_hist':'ven_hist.png',
         'bar_hist':'bar_hist.png',
         'rbc_hist':'rbc_hist.png'
     }
-
-    # render css file first
-    with open(css_temp, 'r') as f:
-        data = f.read()
-        rendered = data.format(**css_parameters)
-
-    with open(css_render, 'w') as o:
-        o.write(rendered)
 
     # reder html second
     with open(html_temp, 'r') as f:
@@ -396,3 +385,18 @@ def genHtml(subject_ID, RBC2barrier, stats_box):
 
     with open(output, 'w') as o:
         o.write(rendered)
+
+    # generate pdf from html
+    import pdfkit
+
+    options = {
+        'page-width':140,
+        'page-height':100,
+        'margin-top': 1,
+        'margin-right': 0.1,
+        'margin-bottom': 0.1,
+        'margin-left': 0.1,
+        'encoding': "UTF-8",
+        }
+
+    pdfkit.from_file('clinical_report.html', 'clinical_report.pdf',options=options)

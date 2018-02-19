@@ -63,7 +63,7 @@ class GXSubject(object):
 
         print("Clnical Report")
         self.generateFigures()
-        self.generateHtml()
+        self.generateHtmlPdf()
 
         time_end = time.time()
         print('*********************finished program')
@@ -265,11 +265,11 @@ class GXSubject(object):
         rbchistogram['hist_name'] = 'rbc_hist.png'
         makeHistogram(**rbchistogram)
 
-    def generateHtml(self):
+    def generateHtmlPdf(self):
 
-        from GX_utils import genHtml
+        from GX_utils import genHtmlPdf
 
-        genHtml(subject_ID = self.subjectID, RBC2barrier = self.RBC2barrier, stats_box = self.stats_box)
+        genHtmlPdf(subject_ID = self.subjectID, RBC2barrier = self.RBC2barrier, stats_box = self.stats_box)
 
 
 if __name__ == "__main__":
