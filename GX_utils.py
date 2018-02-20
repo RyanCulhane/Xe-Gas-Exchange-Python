@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import nibabel as nib
 import scipy.io as sio
@@ -180,6 +181,33 @@ def mergeRGBandGray(ute_slice,binning_slice):
 
     return colormap
 
+def biasFieldCor(image, mask):
+
+    pathInput = 'image.nii'
+    pathMask = 'mask.nii'
+    pathOutput = 'image_cor.nii'
+    pathBiasField = 'biasfield.nii'
+
+    pathN4 = './N4BiasFieldCorrection'
+
+    # save the inputs into nii files so the execute N4 can read in
+    nib.save(abs(image), pathInput)
+    nib.save(mask, pathMask)
+
+    # cmd = pathN4+' -d 3 -i '+pathInput+' -s 2 -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
+    cmd = pathN4+' -d 3 -i '+pathInput+' -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
+
+    os.system(cmd)
+
+    image_cor = np.array(nib.load(pathOutput).get_data())
+    image_biasfield = np.array(nib.load(pathBiasField).get_data())
+
+    # remove the generated nii files
+    os.remove(pathOutput)
+    os.remove(pathBiasField)
+
+    return image_cor, image_biasfield
+
 def fullMontage(X, colormap='gray'):
     # used for debug, plot the entire montage
     m, n, count = np.shape(X)
@@ -200,6 +228,7 @@ def fullMontage(X, colormap='gray'):
     plt.imshow(M, cmap=colormap)
     plt.axis('off')
     plt.show(block=False)
+    
     return M
 
 def montage(Img):
