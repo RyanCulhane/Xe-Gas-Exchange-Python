@@ -1,7 +1,7 @@
 import numpy as np
 
 # This file defines the thresholds of the binning method
-mean_vent = 0.5089
+mean_vent = 0.5098
 std_vent = 0.1899
 thre_vent = [mean_vent-2*std_vent, mean_vent-std_vent, mean_vent,
              mean_vent+std_vent, mean_vent+2*std_vent]
@@ -62,7 +62,7 @@ short_index2color = {
 
 ## parameters for histograms
 rbchistogram = {
-        'color': (0.8941,0.1020,0.1098),
+        'color': (247.0/255,96.0/255,111.0/255),
         'x_lim': 1.2,
         'y_lim': 0.1,
         'num_bins': 50,

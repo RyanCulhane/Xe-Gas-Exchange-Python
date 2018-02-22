@@ -57,12 +57,12 @@ def CNNpredict(ute):
         mask[:,:,i] = mask_slice
 
         # plt.subplot(1,2,1)
-        # plt.imshow(mask_slice, origin="upper")
+        # plt.imshow(mask_slice, origin="upper",cmap='grays')
         # plt.subplot(1,2,2)
-        # plt.imshow(ute_slice, origin="upper")
-        #
-        # saveStr='Segment_'+str(i)+'.png'
-        # plt.savefig(saveStr)
+        # plt.imshow(ute_slice, origin="upper",cmap='gray')
+
+        saveStr='Segment_'+str(i)+'.png'
+        plt.savefig(saveStr)
 
     mask = mask.astype(bool)
 

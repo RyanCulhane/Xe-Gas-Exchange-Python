@@ -30,6 +30,7 @@ def dixonDecomp(gas_highSNR,dissolved,mask_vent,meanRbc2barrier):
     # shift the gas_highSNR to have zero mean phase
     while(abs(meanphase) > 1E-7):
         if(iterCount > 20): warnings.warn('can not converge in 20 iterations')
+        iterCount = iterCount+1
         diffphase = np.angle(gas_highSNR)
         meanphase = np.mean(diffphase[mask_vent])
         gas_highSNR = np.multiply(gas_highSNR,np.exp(-1j*meanphase))
@@ -70,27 +71,27 @@ def gasBinning(gas_highreso,bin_threshold,mask,percentile):
 
     gas_thre = np.percentile(gas_highreso[mask], percentile)
 
-    gas_highreso_m = np.divide(np.multiply(gas_highreso,mask),gas_thre)
+    gas_highreso_n = np.divide(np.multiply(gas_highreso,mask),gas_thre)
 
-    gas_highreso_m[gas_highreso_m > 1] = 1
+    gas_highreso_n[gas_highreso_n > 1] = 1
 
-    gas_binning = binning(gas_highreso_m, bin_threshold)
+    gas_binning = binning(gas_highreso_n, bin_threshold)
 
     # create ventilation mask
     mask_vent = np.copy(gas_binning)
-    mask_vent[mask_vent<3] = 0
-    mask_vent[mask_vent>0] = 1
+    mask_vent[mask_vent<3] = 0 # exclude VDP in the ventilation map 
+    # mask_vent[mask_vent>0] = 1
     mask_vent = mask_vent.astype(bool)
 
-    return gas_highreso_m, gas_binning, mask_vent
+    return gas_highreso_n, gas_binning, mask_vent
 
-def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
+def disBinning(discomp,gas_highSNR,bin_threshold, mask,cor=1):
 
     ## binning for rbc or barrier
     ground = 1e-5
     ground_gas = 1e-15
     # prevent divided by 0
-    gas_highSNR[(mask>0) & (gas_highSNR < ground_gas)] = ground_gas
+    # gas_highSNR[(mask>0) & (gas_highSNR < ground_gas)] = ground_gas
 
     from GX_utils import binning
 
@@ -100,7 +101,7 @@ def disBinning(discomp,gas_highSNR,bin_threshold,mask,cor=1):
     comp2gas = np.multiply(comp2gas,cor)
 
     #set negative values
-    comp2gas[(mask > 0) & (comp2gas < ground)] = ground
+    comp2gas[ comp2gas < 0] = ground
 
     comp2gas_binning= binning(comp2gas, bin_threshold)
 
@@ -191,8 +192,10 @@ def biasFieldCor(image, mask):
     pathN4 = './N4BiasFieldCorrection'
 
     # save the inputs into nii files so the execute N4 can read in
-    nib.save(abs(image), pathInput)
-    nib.save(mask, pathMask)
+    nii_imge = nib.Nifti1Image(abs(image), np.eye(4))
+    nii_mask = nib.Nifti1Image(mask.astype(float), np.eye(4))
+    nib.save(nii_imge, pathInput)
+    nib.save(nii_mask, pathMask)
 
     # cmd = pathN4+' -d 3 -i '+pathInput+' -s 2 -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
     cmd = pathN4+' -d 3 -i '+pathInput+' -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
@@ -228,7 +231,7 @@ def fullMontage(X, colormap='gray'):
     plt.imshow(M, cmap=colormap)
     plt.axis('off')
     plt.show(block=False)
-    
+
     return M
 
 def montage(Img):

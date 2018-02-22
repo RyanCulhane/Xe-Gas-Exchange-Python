@@ -21,6 +21,8 @@ class GXSubject(object):
 
         self.gas_highreso = []
         self.gas_highSNR = []
+        self.gas_highreso_cor = []
+        self.gas_biasfield = []
         self.dissolved = []
 
         self.rbc = []
@@ -50,7 +52,8 @@ class GXSubject(object):
         # self.checkAlignment()
         self.uteRegister()
 
-        print("*********************Gas_highreso binning and mask_vent")
+        print("*********************Gas BiasFied Correction, Binning and Ventilation Mask")
+        self.gasBiasFieldCor()
         self.gasBinning()
 
         print("*********************Dixon and binning")
@@ -119,12 +122,12 @@ class GXSubject(object):
         # self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
 
         fute = 'BHUTE_Sub002102_FID49886_recon.nii'
-
         self.ute = np.array(nib.load(fute).get_data())
 
-        # self.mask = CNNpredict(ute = self.ute)
-        fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
-        self.mask = np.array(nib.load(fmask).get_data())
+        self.mask = CNNpredict(ute = self.ute)
+        pdb.set_trace()
+        # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        # self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 
@@ -145,12 +148,31 @@ class GXSubject(object):
                                                ute          = self.ute,
                                                mask         = self.mask.astype(float))
 
+        # fmask_reg = 'BHUTE_Sub002102_FID49886_mask_grow_reg.nii'
+        # self.mask_reg = np.array(nib.load(fmask_reg).get_data()).astype(bool)
+        #
+        # fute_reg = 'BHUTE_Sub002102_FID49886_recon_reg.nii'
+        # self.ute_reg = np.array(nib.load(fute_reg).get_data())
+        #
+        # def alignrot(x):
+        #     return(np.flip(np.flip(np.flip(x,0),1),2))
+        #
+        # self.ute_reg = alignrot(self.ute_reg)
+        # self.mask_reg = alignrot(self.mask_reg)
+
+
+    def gasBiasFieldCor(self):
+        # conduct bias field correction for gas_highreso
+        from GX_utils import biasFieldCor
+
+        self.gas_highreso_cor, self.gas_biasfield = biasFieldCor(image = abs(self.gas_highreso), mask = self.mask_reg)
+
     def gasBinning(self):
         ## Binning for gas_highreso
         from GX_defineColormaps import thre_vent
         from GX_utils import gasBinning
 
-        self.ventilation, self.ven_binning, self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso),
+        self.ventilation, self.ven_binning, self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso_cor),
                                                                             bin_threshold = thre_vent,
                                                                             mask          = self.mask_reg,
                                                                             percentile    = 99)
@@ -159,7 +181,7 @@ class GXSubject(object):
         ## Dixon decomposition to get rbc and barrier from dissolved
         from GX_utils import dixonDecomp
 
-        self.rbc, self.barrier = dixonDecomp(gas_highSNR     = abs(self.gas_highSNR),
+        self.rbc, self.barrier = dixonDecomp(gas_highSNR     = self.gas_highSNR,
                                              dissolved       = self.dissolved,
                                              mask_vent       = self.mask_reg_vent,
                                              meanRbc2barrier = self.RBC2barrier)
@@ -182,7 +204,7 @@ class GXSubject(object):
         from GX_defineColormaps import thre_rbc
         from GX_utils import disBinning
 
-        cor_TE90 = np.exp(self.TE90/2000)/np.exp(self.TE90/50000)
+        cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
 
         self.rbc2gas, self.rbc2gas_binning = disBinning(discomp       = self.rbc,
@@ -190,6 +212,7 @@ class GXSubject(object):
                                                         bin_threshold = thre_rbc,
                                                         mask          = self.mask_reg_vent,
                                                         cor           = cor_TE90*cor_flipoff)
+        # pdb.set_trace()
 
     def generateStats(self):
         ## calculate statistics
