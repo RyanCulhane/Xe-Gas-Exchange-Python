@@ -61,8 +61,8 @@ def CNNpredict(ute):
         # plt.subplot(1,2,2)
         # plt.imshow(ute_slice, origin="upper",cmap='gray')
 
-        saveStr='Segment_'+str(i)+'.png'
-        plt.savefig(saveStr)
+        # saveStr='Segment_'+str(i)+'.png'
+        # plt.savefig(saveStr)
 
     mask = mask.astype(bool)
 

@@ -8,6 +8,7 @@ body {
     width:1000px;
     font-size: 20pt;
     margin: 10px 10px;
+    margin-left: 30px;
     float:none;
 }
 .map-container{

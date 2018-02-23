@@ -16,8 +16,9 @@ class GXSubject(object):
         time_start = time.time()
         self.data_dir = data_dir
         self.filename = []
-        self.RBC2barrier = 0.457
+        self.RBC2barrier = 0.046
         self.Subject_ID = Subject_ID
+        pdb.set_trace()
         self.TE90 = 460
         self.FOV = 40.0
 
@@ -126,10 +127,9 @@ class GXSubject(object):
         # fute = 'BHUTE_Sub002102_FID49886_recon.nii'
         self.ute = np.array(nib.load(fute).get_data())
 
-        # self.mask = CNNpredict(ute = self.ute)
-        fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
-        # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
-        self.mask = np.array(nib.load(fmask).get_data())
+        self.mask = CNNpredict(ute = self.ute)
+        # fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
+        # self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 
@@ -255,8 +255,8 @@ class GXSubject(object):
 
         from GX_defineColormaps import short_index2color, long_index2color, venhistogram, barhistogram, rbchistogram
 
-        ind_start = 10
-        ind_inter = 5
+        ind_start = 30
+        ind_inter = 3
 
         ## make montage
         ven_montage = makeMontage(bin_index = self.ven_binning,
@@ -304,15 +304,21 @@ class GXSubject(object):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        # pdb.set_trace()
-        print "Usage: python GX_classmap.py <data directory> <Subject_ID>"
-        sys.exit(-1)
 
-    data_dir = sys.argv[1]
-    Subject_ID = sys.argv[2]
+    if (len(sys.argv) == 2):
+        data_dir = sys.argv[1]
+        Subject_ID = sys.argv[1]
+
+    elif(len(sys.argv) == 3):
+        data_dir = sys.argv[1]
+        Subject_ID = sys.argv[2]
+
+    else:
+        print "Usage 1: python GX_classmap.py <data directory/Subject_ID>"
+        print "Usage 2: python GX_classmap.py <data directory> <Subject_ID>"
+        sys.exit(-1)
 
     # Create helper object
     from GX_utils import fullMontage
-    subject = GXSubject(data_dir, Subject_ID)
+    subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
     pdb.set_trace()

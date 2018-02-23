@@ -108,5 +108,6 @@ referece_stats = {
         'r_rbc_high_ave':'7',
         'r_rbc_high_std':'5',
 
-        'r_RBC2barrier':'0.6',
+        'r_RBC2barrier_ave':'0.53',
+        'r_RBC2barrier_std':'0.18'
 }
