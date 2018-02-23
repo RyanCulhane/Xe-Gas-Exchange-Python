@@ -16,7 +16,7 @@ class GXSubject(object):
         time_start = time.time()
         self.data_dir = data_dir
         self.filename = []
-        self.RBC2barrier = 0.046
+        self.RBC2barrier = 0.457
         self.Subject_ID = Subject_ID
         pdb.set_trace()
         self.TE90 = 460
@@ -127,9 +127,9 @@ class GXSubject(object):
         # fute = 'BHUTE_Sub002102_FID49886_recon.nii'
         self.ute = np.array(nib.load(fute).get_data())
 
-        self.mask = CNNpredict(ute = self.ute)
-        # fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
-        # self.mask = np.array(nib.load(fmask).get_data())
+        # self.mask = CNNpredict(ute = self.ute)
+        fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
+        self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 
@@ -251,12 +251,11 @@ class GXSubject(object):
     def generateFigures(self):
         ## make montage, plot histogram, and generate report
 
-        from GX_utils import makeMontage, makeHistogram
+        from GX_utils import makeMontage, makeHistogram, decideStartInterval
 
         from GX_defineColormaps import short_index2color, long_index2color, venhistogram, barhistogram, rbchistogram
 
-        ind_start = 30
-        ind_inter = 3
+        ind_start, ind_inter = decideStartInterval(mask = self.mask_reg)
 
         ## make montage
         ven_montage = makeMontage(bin_index = self.ven_binning,

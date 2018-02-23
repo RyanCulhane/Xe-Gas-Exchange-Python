@@ -12,6 +12,52 @@ from matplotlib import pyplot as plt
 
 import pdb
 
+def getIndexMaxOnes(arr):
+    ## returns the starting index and ending index of the max consecutive ones
+    # intitialize count
+    cur_count = 0
+    cur_sta = 0
+
+    max_count = 0
+    pre_state = 0
+
+    index_sta = 0
+    index_end = 0
+
+    for i in range(0, np.size(arr)):
+
+        if (arr[i] == 0):
+            cur_count = 0
+            if((pre_state == 1)&(cur_sta == index_sta)):
+                index_end = i-1
+            pre_state = 0
+
+        else:
+            if(pre_state == 0):
+                cur_sta = i
+                pre_state = 1
+            cur_count+= 1
+            if(cur_count>max_count):
+                max_count = cur_count
+                index_sta = cur_sta
+
+    return index_sta,index_end
+
+def decideStartInterval(mask):
+
+    # determine the starting slice and the interval for the montage
+    num_slice = 16.0
+
+    sum_line = np.sum(np.sum(mask,axis=0),axis=0)
+
+    binary_arr = sum_line>300
+
+    ind_start, ind_end =  getIndexMaxOnes(binary_arr)
+
+    ind_inter = np.round((ind_end-ind_start)/num_slice).astype(int)
+
+    return ind_start, ind_inter
+
 def dixonDecomp(gas_highSNR,dissolved,mask_vent,meanRbc2barrier):
 
     ## apply delta angfe from RBC:barrier ******************
@@ -295,7 +341,7 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, mon_name)
     img_montage = montage(colormap)
 
     ## plot and save the montage
-    plt.imshow(img_montage)
+    plt.imshow(img_montage,interpolation='none')
     plt.axis('off')
     plt.savefig(mon_name,transparent = True,bbox_inches='tight',pad_inches=-0.1)
 
