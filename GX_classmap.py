@@ -2,6 +2,7 @@ import numpy as np
 import numpy as np
 import nibabel as nib
 import scipy.io as sio
+import glob, os
 import sys
 import time
 
@@ -10,12 +11,13 @@ from matplotlib import pyplot as plt
 import pdb
 
 class GXSubject(object):
-    def __init__(self):
-        print("Initiate subject 002102. Today is a beautiful day!")
+    def __init__(self, data_dir, Subject_ID):
+        print("*********************Initiate subject. Today is a beautiful day!")
         time_start = time.time()
+        self.data_dir = data_dir
         self.filename = []
         self.RBC2barrier = 0.457
-        self.subjectID = '005-012'
+        self.Subject_ID = Subject_ID
         self.TE90 = 460
         self.FOV = 40.0
 
@@ -107,7 +109,7 @@ class GXSubject(object):
     def readinXe(self):
         ## temporal usage
         # read in dissolved and gas Xe
-        fdata = 'Sub002102_data.mat'
+        fdata = self.data_dir+'/Sub'+self.Subject_ID+'_data.mat'
 
         mat_input = sio.loadmat(fdata)
         self.gas_highreso = mat_input['gasVol_highreso']
@@ -120,13 +122,13 @@ class GXSubject(object):
 
         # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
         # self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
-
-        fute = 'BHUTE_Sub002102_FID49886_recon.nii'
+        fute = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*recon.nii')[0]
+        # fute = 'BHUTE_Sub002102_FID49886_recon.nii'
         self.ute = np.array(nib.load(fute).get_data())
 
         # self.mask = CNNpredict(ute = self.ute)
-
-        fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
+        # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
         self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
@@ -262,57 +264,55 @@ class GXSubject(object):
                                   index2color = short_index2color,
                                   ind_start = ind_start,
                                   ind_inter = ind_inter,
-                                  mon_name = 'ven_montage.png')
+                                  mon_name = self.data_dir+'/ven_montage.png')
 
         bar_montage = makeMontage(bin_index = self.bar2gas_binning,
                                   ute_reg = self.ute_reg,
                                   index2color = long_index2color,
                                   ind_start = ind_start,
                                   ind_inter = ind_inter,
-                                  mon_name = 'bar_montage.png')
+                                  mon_name = self.data_dir+'/bar_montage.png')
 
         rbc_montage = makeMontage(bin_index = self.rbc2gas_binning,
                                   ute_reg = self.ute_reg,
                                   index2color = short_index2color,
                                   ind_start = ind_start,
                                   ind_inter = ind_inter,
-                                  mon_name = 'rbc_montage.png')
+                                  mon_name = self.data_dir+'/rbc_montage.png')
 
         ## make histogram
         venhistogram['data'] = self.ventilation[self.mask_reg]
-        venhistogram['hist_name'] = 'ven_hist.png'
+        venhistogram['hist_name'] = self.data_dir+'/ven_hist.png'
         makeHistogram(**venhistogram)
 
         barhistogram['data'] = self.bar2gas[self.mask_reg_vent]
-        barhistogram['hist_name'] = 'bar_hist.png'
+        barhistogram['hist_name'] = self.data_dir+'/bar_hist.png'
         makeHistogram(**barhistogram)
 
         rbchistogram['data'] = self.rbc2gas[self.mask_reg_vent]
-        rbchistogram['hist_name'] = 'rbc_hist.png'
+        rbchistogram['hist_name'] = self.data_dir+'/rbc_hist.png'
         makeHistogram(**rbchistogram)
 
     def generateHtmlPdf(self):
 
         from GX_utils import genHtmlPdf
 
-        genHtmlPdf(Subject_ID = self.subjectID, RBC2barrier = self.RBC2barrier, stats_box = self.stats_box)
+        genHtmlPdf(Subject_ID = self.Subject_ID,
+                   data_dir = self.data_dir,
+                   RBC2barrier = self.RBC2barrier,
+                   stats_box = self.stats_box)
 
 
 if __name__ == "__main__":
-    # if len(sys.argv) != 4:
-    #     print "Usage: python geohash2kml.py <mode> <input file> <output file>"
-    #     sys.exit(-1)
-    #
-    # output_type = sys.argv[1]
-    # if output_type not in OUTPUT_TYPES:
-    #     print "Please select one of the following modes: {}".format(OUTPUT_TYPES)
-    #     sys.exit(1)
+    if len(sys.argv) != 3:
+        # pdb.set_trace()
+        print "Usage: python GX_classmap.py <data directory> <Subject_ID>"
+        sys.exit(-1)
 
-    # Collect file arguments
-    # input_file = sys.argv[2]
-    # output_file = sys.argv[3]
+    data_dir = sys.argv[1]
+    Subject_ID = sys.argv[2]
 
     # Create helper object
     from GX_utils import fullMontage
-    subject = GXSubject()
+    subject = GXSubject(data_dir, Subject_ID)
     pdb.set_trace()

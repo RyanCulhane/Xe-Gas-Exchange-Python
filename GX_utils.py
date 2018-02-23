@@ -206,6 +206,8 @@ def biasFieldCor(image, mask):
     image_biasfield = np.array(nib.load(pathBiasField).get_data())
 
     # remove the generated nii files
+    os.remove(pathInput)
+    os.remove(pathMask)
     os.remove(pathOutput)
     os.remove(pathBiasField)
 
@@ -332,12 +334,12 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     plt.locator_params(axis='x', nbins=4, nticks=4)
 
     # barrier/RBC add a tick on the end
-    if((hist_name == 'bar_hist.png')):
+    if('bar_hist.png' in hist_name):
         xticks = [0.0, 1.0, 2.0, 2.5]
         ticklabels = ['0.0', '1.0','2.0','2.5']
         plt.xticks(xticks, ticklabels)
 
-    if((hist_name == 'rbc_hist.png')):
+    if('rbc_hist.png' in hist_name):
         xticks = [0.0, 0.5, 1.0, 1.2]
         ticklabels = ['0.0', '0.5', '1.0','1.2']
         plt.xticks(xticks, ticklabels)
@@ -433,7 +435,7 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
     return statsbox
 
-def genHtmlPdf(Subject_ID, RBC2barrier, stats_box):
+def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
     # reder html using the templates and stats
     temp_clinical = "temp_clinical.html"
     temp_technical = "temp_technical.html"
@@ -474,13 +476,13 @@ def genHtmlPdf(Subject_ID, RBC2barrier, stats_box):
         'rbc_SNR': adj_format2(stats_box['rbc_SNR']),
         'rbc_negative': adj_format1(stats_box['rbc_negative']),
 
-        'ven_montage':'ven_montage.png',
-        'bar_montage':'bar_montage.png',
-        'rbc_montage':'rbc_montage.png',
+        'ven_montage':data_dir+'/ven_montage.png',
+        'bar_montage':data_dir+'/bar_montage.png',
+        'rbc_montage':data_dir+'/rbc_montage.png',
 
-        'ven_hist':'ven_hist.png',
-        'bar_hist':'bar_hist.png',
-        'rbc_hist':'rbc_hist.png'
+        'ven_hist':data_dir+'/ven_hist.png',
+        'bar_hist':data_dir+'/bar_hist.png',
+        'rbc_hist':data_dir+'/rbc_hist.png'
     }
 
     from GX_defineColormaps import referece_stats
@@ -514,5 +516,8 @@ def genHtmlPdf(Subject_ID, RBC2barrier, stats_box):
         'encoding': "UTF-8",
         }
 
-    pdfkit.from_file('report_clinical.html', 'report_clinical.pdf',options=options)
-    pdfkit.from_file('report_technical.html', 'report_technical.pdf',options=options)
+    pdfkit.from_file(report_clinical, data_dir+'/report_clinical.pdf',options=options)
+    pdfkit.from_file(report_technical, data_dir+'/report_technical.pdf',options=options)
+
+    os.remove(report_technical)
+    os.remove(report_clinical)
