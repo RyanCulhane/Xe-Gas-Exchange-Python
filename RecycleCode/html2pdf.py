@@ -4,8 +4,8 @@ import os
 cwd = os.getcwd()
 
 options = {
-    'page-width':140,
-    'page-height':100,
+    'page-width':160,
+    'page-height':80,
     'margin-top': 1,
     'margin-right': 0.1,
     'margin-bottom': 0.1,
@@ -14,4 +14,4 @@ options = {
     # 'dpi':400
     }
 
-pdfkit.from_file('clinical_report.html', 'clinical_report.pdf',options=options)
+pdfkit.from_file('report_clinical.html', 'report_clinical.pdf',options=options)

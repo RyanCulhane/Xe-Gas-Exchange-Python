@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="Gas Exchange Report with 129Xe MRI-technical report">
+        <meta name="author" content="Ziyi Wang">
+        <link href="report_reset.css" rel="stylesheet">
+        <link href="report_style.css" rel="stylesheet">
+        <title>Gas Exchange Report</title>
+    </head>
+    <body>
+        <h1 id='big-title'>Gas Exchange Summary of Subject {Subject_ID}</h1>
+        <div class='hist-container'>
+            <div class="hist-tile" align='right'>
+                <img src={ven_hist} style="width:100%;">
+                <div class="top-right">
+                  <h2>Ventilation</h2>
+                  <p>SNR: {ven_SNR}</p>
+                </div>
+            </div>
+            <div class="hist-tile" align='right'>
+                <img src={bar_hist} style="width:100%;">
+                <div class="top-right">
+                    <h2>Barrier</h2>
+                    <p>SNR: {bar_SNR}</p>
+                    <p>Negative: {bar_negative}%</p>
+                </div>
+            </div>
+            <div class="hist-tile" align='right'>
+                <img src={rbc_hist} style="width:100%;">
+                <div class="top-right">
+                    <h2>RBC</h2>
+                    <p>SNR: {rbc_SNR}</p>
+                    <p>Negative: {rbc_negative}%</p>
+                </div>
+            </div>
+        </div>
+        <div class='map-container'>
+            <div class="map-tile">
+                <img src={ven_montage} height=195px>
+                <img src={bar_montage} height=195px>
+                <img src={rbc_montage} height=195px>
+            </div>
+            <div class="colorbar-tile">
+                <img src=colorbin_short.png height=150px>
+                <div class = space>
+                </div>
+                <img src=colorbin_long.png height=200px>
+                <div class = space>
+                </div>
+                <img src=colorbin_short.png height=150px>
+            </div>
+        </div>
+        <div class='table-container'>
+            <table>
+                <tr class='title'>
+                    <th>Subject</th>
+                    <th>{Subject_ID}</th>
+                    <th>Ref</th>
+                </tr>
+                <tr class='basic'>
+                    <td>
+                        <p>RBC:</p>
+                        <p>Barrier</p>
+                    </td>
+                    <td>{RBC2barrier}</td>
+                    <td>{r_RBC2barrier}</td>
+                </tr>
+                <tr class='basic'>
+                    <td>Inflation</td>
+                    <td>{inflation}L</td>
+                    <td>---</td>
+                </tr>
+                <tr class='ven'>
+                    <td>Defect</td>
+                    <td>{ven_defect}%</td>
+                    <td>{r_ven_defect_ave}&#177;{r_ven_defect_std}%</td>
+                </tr>
+                <tr class='ven'>
+                    <td>Low</td>
+                    <td>{ven_low}%</td>
+                    <td>{r_ven_low_ave}&#177;{r_ven_low_std}%</td>
+                </tr>
+                <tr class='ven'>
+                    <td>High</td>
+                    <td>{ven_high}%</td>
+                    <td>{r_ven_high_ave}&#177;{r_ven_high_std}%</td>
+                </tr>
+                <tr class='bar'>
+                    <td>Defect</td>
+                    <td>{bar_defect}%</td>
+                    <td>{r_bar_defect_ave}&#177;{r_bar_defect_std}%</td>
+                </tr>
+                <tr class='bar'>
+                    <td>Low</td>
+                    <td>{bar_low}%</td>
+                    <td>{r_bar_low_ave}&#177;{r_bar_low_std}%</td>
+                </tr>
+                <tr class='bar'>
+                    <td>High</td>
+                    <td>{bar_high}%</td>
+                    <td>{r_bar_high_ave}&#177;{r_bar_high_std}%</td>
+                </tr>
+                <tr class='rbc'>
+                    <td>Defect</td>
+                    <td>{rbc_defect}%</td>
+                    <td>{r_rbc_defect_ave}&#177;{r_rbc_defect_std}%</td>
+                </tr>
+                <tr class='rbc'>
+                    <td>Low</td>
+                    <td>{rbc_low}%</td>
+                    <td>{r_rbc_low_ave}&#177;{r_rbc_low_std}%</td>
+                </tr>
+                <tr class='rbc'>
+                    <td>High</td>
+                    <td>{rbc_high}%</td>
+                    <td>{r_rbc_high_ave}&#177;{r_rbc_high_std}%</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

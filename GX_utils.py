@@ -79,7 +79,7 @@ def gasBinning(gas_highreso,bin_threshold,mask,percentile):
 
     # create ventilation mask
     mask_vent = np.copy(gas_binning)
-    mask_vent[mask_vent<3] = 0 # exclude VDP in the ventilation map 
+    mask_vent[mask_vent<3] = 0 # exclude VDP in the ventilation map
     # mask_vent[mask_vent>0] = 1
     mask_vent = mask_vent.astype(bool)
 
@@ -433,11 +433,13 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
     return statsbox
 
-def genHtmlPdf(subject_ID, RBC2barrier, stats_box):
+def genHtmlPdf(Subject_ID, RBC2barrier, stats_box):
     # reder html using the templates and stats
-    html_temp = "report_temp.html"
+    temp_clinical = "temp_clinical.html"
+    temp_technical = "temp_technical.html"
 
-    output = "clinical_report.html"
+    report_clinical = "report_clinical.html"
+    report_technical = "report_technical.html"
 
     def adj_format1(x):
         num = np.around((x)*100,decimals=0).astype(int)
@@ -451,8 +453,8 @@ def genHtmlPdf(subject_ID, RBC2barrier, stats_box):
 
 
     html_parameters = {
-        'Subject_ID': subject_ID,
-        'inflation': np.around(stats_box['inflation'],decimals=0).astype(int),
+        'Subject_ID': Subject_ID,
+        'inflation': np.around(stats_box['inflation'],decimals=2),
         'RBC2barrier': np.around(RBC2barrier,decimals=3).astype(str),
         'ven_defect': adj_format1(stats_box['ven_defect']),
         'ven_low': adj_format1(stats_box['ven_low']),
@@ -481,20 +483,30 @@ def genHtmlPdf(subject_ID, RBC2barrier, stats_box):
         'rbc_hist':'rbc_hist.png'
     }
 
+    from GX_defineColormaps import referece_stats
+    html_parameters.update(referece_stats)
+
     # reder html second
-    with open(html_temp, 'r') as f:
+    with open(temp_clinical, 'r') as f:
         data = f.read()
         rendered = data.format(**html_parameters)
 
-    with open(output, 'w') as o:
+    with open(report_clinical, 'w') as o:
+        o.write(rendered)
+
+    with open(temp_technical, 'r') as f:
+        data = f.read()
+        rendered = data.format(**html_parameters)
+
+    with open(report_technical, 'w') as o:
         o.write(rendered)
 
     # generate pdf from html
     import pdfkit
 
     options = {
-        'page-width':140,
-        'page-height':100,
+        'page-width':160,
+        'page-height':80,
         'margin-top': 1,
         'margin-right': 0.1,
         'margin-bottom': 0.1,
@@ -502,4 +514,5 @@ def genHtmlPdf(subject_ID, RBC2barrier, stats_box):
         'encoding': "UTF-8",
         }
 
-    pdfkit.from_file('clinical_report.html', 'clinical_report.pdf',options=options)
+    pdfkit.from_file('report_clinical.html', 'report_clinical.pdf',options=options)
+    pdfkit.from_file('report_technical.html', 'report_technical.pdf',options=options)

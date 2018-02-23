@@ -84,3 +84,29 @@ venhistogram = {
         'num_bins': 50,
         'refer_fit': (0.04074, 0.494, 0.278)
 }
+## average and std for the reference cohort of the statics
+
+referece_stats = {
+        'r_ven_defect_ave': '1',
+        'r_ven_defect_std':'<1',
+        'r_ven_low_ave':'15',
+        'r_ven_low_std':'6',
+        'r_ven_high_ave':'17',
+        'r_ven_high_std':'10',
+
+        'r_bar_defect_ave':'<1',
+        'r_bar_defect_std':'<1',
+        'r_bar_low_ave':'9',
+        'r_bar_low_std':'8',
+        'r_bar_high_ave':'1',
+        'r_bar_high_std':'4',
+
+        'r_rbc_defect_ave':'5',
+        'r_rbc_defect_std':'3',
+        'r_rbc_low_ave':'21',
+        'r_rbc_low_std':'6',
+        'r_rbc_high_ave':'7',
+        'r_rbc_high_std':'5',
+
+        'r_RBC2barrier':'0.6',
+}

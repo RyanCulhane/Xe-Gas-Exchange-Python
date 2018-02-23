@@ -124,10 +124,10 @@ class GXSubject(object):
         fute = 'BHUTE_Sub002102_FID49886_recon.nii'
         self.ute = np.array(nib.load(fute).get_data())
 
-        self.mask = CNNpredict(ute = self.ute)
-        pdb.set_trace()
-        # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
-        # self.mask = np.array(nib.load(fmask).get_data())
+        # self.mask = CNNpredict(ute = self.ute)
+
+        fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
+        self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 
@@ -244,7 +244,7 @@ class GXSubject(object):
         self.stats_box = gas_stats
         self.stats_box.update(barrier_stats)
         self.stats_box.update(rbc_stats)
-        self.stats_box['inflation'] = np.multiply(np.sum(self.mask_reg),self.FOV**3/np.shape(self.mask_reg)[0]**3).astype(int)
+        self.stats_box['inflation'] = np.multiply(np.sum(self.mask_reg),self.FOV**3/np.shape(self.mask_reg)[0]**3/1000.0)
 
     def generateFigures(self):
         ## make montage, plot histogram, and generate report
@@ -295,7 +295,7 @@ class GXSubject(object):
 
         from GX_utils import genHtmlPdf
 
-        genHtmlPdf(subject_ID = self.subjectID, RBC2barrier = self.RBC2barrier, stats_box = self.stats_box)
+        genHtmlPdf(Subject_ID = self.subjectID, RBC2barrier = self.RBC2barrier, stats_box = self.stats_box)
 
 
 if __name__ == "__main__":
