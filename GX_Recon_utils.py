@@ -3,6 +3,7 @@ import scipy.sparse as sps
 import numpy as np
 import pdb
 import ctypes as ct
+import os
 from numpy.ctypeslib import ndpointer
 
 def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
@@ -18,7 +19,7 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
     # 		unsigned int max_size,
     # 		int force_dim)
 
-    _sparse = ct.CDLL('/home/ziyi/Gas_Exchange/libsparse.so')
+    _sparse = ct.CDLL(os.getcwd()+'/libsparse.so')
 
     _sparse.sparse_gridding_distance.argtypes = (\
      ct.POINTER(ct.c_double),ct.c_double, ct.c_uint, ct.c_uint, ct.POINTER(ct.c_uint),\
@@ -79,3 +80,27 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
     sample_indices, voxel_indices, distances = sparse_gridding(traj, kernel_para, matrix_size, force_dim)
 
     return sample_indices, voxel_indices, distances
+
+def gen_traj_c(num_projs, traj_type):
+    # generate xyz coordinates for the trajectory samples based on the number of projs and traj type
+    # traj_type:
+    # 1: Spiral
+    # 2. Halton
+    # 3. Haltonized Spiral
+    # 4. ArchimedianSeq
+    # 5. Double Golden Mean
+
+    # output 3 coordinates of the trajectory points
+    output_size = 3*num_projs
+
+    _traj = ct.CDLL(os.getcwd()+'/libtraj.so')
+    _traj.gen_traj.argtypes = (ct.c_long,ct.c_long)
+    _traj.gen_traj.restype = ndpointer(dtype=ct.c_double, shape=(output_size,))
+
+    result = _traj.gen_traj(ct.c_long(num_projs), ct.c_long(traj_type))
+
+    x = result[:num_projs]
+    y = result[num_projs:2*num_projs]
+    z = result[2*num_projs:3*num_projs]
+
+return x, y, z
