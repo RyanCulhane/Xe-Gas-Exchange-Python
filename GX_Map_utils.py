@@ -113,8 +113,6 @@ def binning(volume,thresholds):
 
 def gasBinning(gas_highreso,bin_threshold,mask,percentile):
     ## binning for gas
-    from GX_utils import binning
-
     gas_thre = np.percentile(gas_highreso[mask], percentile)
 
     gas_highreso_n = np.divide(np.multiply(gas_highreso,mask),gas_thre)
@@ -138,8 +136,6 @@ def disBinning(discomp,gas_highSNR,bin_threshold, mask,cor=1):
     ground_gas = 1e-15
     # prevent divided by 0
     # gas_highSNR[(mask>0) & (gas_highSNR < ground_gas)] = ground_gas
-
-    from GX_utils import binning
 
     comp2gas = np.zeros(np.shape(gas_highSNR))
 
@@ -501,7 +497,7 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
 
 
     html_parameters = {
-        'Subject_ID': Subject_ID,
+        'Subject_ID': Subject_ID[:3]+'-'+Subject_ID[3:],
         'inflation': np.around(stats_box['inflation'],decimals=2),
         'RBC2barrier': np.around(RBC2barrier,decimals=3).astype(str),
         'ven_defect': adj_format1(stats_box['ven_defect']),

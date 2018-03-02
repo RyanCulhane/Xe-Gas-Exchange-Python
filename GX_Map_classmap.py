@@ -11,6 +11,8 @@ from matplotlib import pyplot as plt
 import pdb
 
 class GXSubject(object):
+    'A gas exchange subject'
+
     def __init__(self, data_dir, Subject_ID):
         print("*********************Initiate subject. Today is a beautiful day!")
         time_start = time.time()
@@ -43,7 +45,6 @@ class GXSubject(object):
         self.mask_reg = []
         self.mask_reg_vent = []
 
-        self.key_box = {}
         self.stats_box = {}
 
         print("*********************Read in 129Xe data")
@@ -144,7 +145,7 @@ class GXSubject(object):
 
     def uteRegister(self):
         ## temporal usage
-        from GX_utils import register
+        from GX_Map_utils import register
 
         self.ute_reg, self.mask_reg = register(gas_highreso = abs(self.gas_highreso),
                                                ute          = self.ute,
@@ -165,14 +166,14 @@ class GXSubject(object):
 
     def gasBiasFieldCor(self):
         # conduct bias field correction for gas_highreso
-        from GX_utils import biasFieldCor
+        from GX_Map_utils import biasFieldCor
 
         self.gas_highreso_cor, self.gas_biasfield = biasFieldCor(image = abs(self.gas_highreso), mask = self.mask_reg)
 
     def gasBinning(self):
         ## Binning for gas_highreso
         from GX_defineColormaps import thre_vent
-        from GX_utils import gasBinning
+        from GX_Map_utils import gasBinning
 
         self.ventilation, self.ven_binning, self.mask_reg_vent = gasBinning(gas_highreso  = abs(self.gas_highreso_cor),
                                                                             bin_threshold = thre_vent,
@@ -181,7 +182,7 @@ class GXSubject(object):
 
     def dixonDecomp(self):
         ## Dixon decomposition to get rbc and barrier from dissolved
-        from GX_utils import dixonDecomp
+        from GX_Map_utils import dixonDecomp
 
         self.rbc, self.barrier = dixonDecomp(gas_highSNR     = self.gas_highSNR,
                                              dissolved       = self.dissolved,
@@ -190,7 +191,7 @@ class GXSubject(object):
     def barBinning(self):
         ## binning for barrier
         from GX_defineColormaps import thre_bar
-        from GX_utils import disBinning
+        from GX_Map_utils import disBinning
 
         cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
@@ -204,7 +205,7 @@ class GXSubject(object):
     def rbcBinning(self):
         ## binning for barrier
         from GX_defineColormaps import thre_rbc
-        from GX_utils import disBinning
+        from GX_Map_utils import disBinning
 
         cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
         cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
@@ -218,7 +219,7 @@ class GXSubject(object):
 
     def generateStats(self):
         ## calculate statistics
-        from GX_utils import binStats
+        from GX_Map_utils import binStats
 
         gas_stats = binStats(rawdata = self.ventilation,
                              bindata = self.ven_binning,
@@ -251,7 +252,7 @@ class GXSubject(object):
     def generateFigures(self):
         ## make montage, plot histogram, and generate report
 
-        from GX_utils import makeMontage, makeHistogram, decideStartInterval
+        from GX_Map_utils import makeMontage, makeHistogram, decideStartInterval
 
         from GX_defineColormaps import short_index2color, long_index2color, venhistogram, barhistogram, rbchistogram
 
@@ -294,13 +295,16 @@ class GXSubject(object):
 
     def generateHtmlPdf(self):
 
-        from GX_utils import genHtmlPdf
+        from GX_Map_utils import genHtmlPdf
 
         genHtmlPdf(Subject_ID = self.Subject_ID,
                    data_dir = self.data_dir,
                    RBC2barrier = self.RBC2barrier,
                    stats_box = self.stats_box)
 
+    def saveMat(self):
+
+        sio.savemat(self.Subject_ID+'.mat',vars(self))
 
 if __name__ == "__main__":
 
@@ -318,6 +322,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # Create helper object
-    from GX_utils import fullMontage
+    from GX_Map_utils import fullMontage
     subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
+    subject.saveMat()
     pdb.set_trace()

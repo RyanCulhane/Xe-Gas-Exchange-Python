@@ -13,7 +13,7 @@ input1 = mat_input['traj']
 input2 = mat_input['input2_kernelExtent_overgridF']
 input3 = mat_input['input3_uint32_matrixS']
 input4 = mat_input['input4']
-# pdb.set_trace()
+pdb.set_trace()
 #wrap up c function:
 # void sparse_gridding_distance(double *coords, double kernel_width,
 # 		unsigned int npts, unsigned int ndims,
