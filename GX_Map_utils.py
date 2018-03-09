@@ -198,7 +198,7 @@ def register(gas_highreso, ute, mask):
 
     np_ute_reg = sitk.GetArrayFromImage(sitk_ute_reg)
     # sitk.WriteImage(sitk_ute_reg,p_ute_recon+"_reg.nii")
-    return np_ute_reg, np_mask_reg
+    return np_ute_reg.astype('float64'), np_mask_reg
 
 def mergeRGBandGray(ute_slice,binning_slice):
     # function combine the gray scale UTE with the RGB binning via HSV
@@ -253,7 +253,7 @@ def biasFieldCor(image, mask):
     os.remove(pathOutput)
     os.remove(pathBiasField)
 
-    return image_cor, image_biasfield
+    return image_cor.astype('float64'), image_biasfield.astype('float64')
 
 def fullMontage(X, colormap='gray'):
     # used for debug, plot the entire montage
@@ -549,17 +549,20 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
     import pdfkit
 
     options = {
-        'page-width':160,
-        'page-height':80,
+        'page-width':160,#320,
+        'page-height':80,#160,
         'margin-top': 1,
         'margin-right': 0.1,
         'margin-bottom': 0.1,
         'margin-left': 0.1,
+        # 'dpi':300,
+        # 'zoom':2,
+        # 'disable-smart-shrinking':'',
         'encoding': "UTF-8",
         }
 
-    pdfkit.from_file(report_clinical, data_dir+'/report_clinical.pdf',options=options)
-    pdfkit.from_file(report_technical, data_dir+'/report_technical.pdf',options=options)
+    pdfkit.from_file(report_clinical, data_dir+'/report_clinical_'+data_dir+'.pdf',options=options)
+    pdfkit.from_file(report_technical, data_dir+'/report_technical_'+data_dir+'.pdf',options=options)
 
     os.remove(report_technical)
     os.remove(report_clinical)

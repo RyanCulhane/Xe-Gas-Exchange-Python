@@ -18,10 +18,9 @@ class GXSubject(object):
         time_start = time.time()
         self.data_dir = data_dir
         self.filename = []
-        self.RBC2barrier = 0.457
+        self.RBC2barrier = 0.3810
         self.Subject_ID = Subject_ID
-        pdb.set_trace()
-        self.TE90 = 460
+        self.TE90 = 480
         self.FOV = 40.0
 
         self.gas_highreso = []
@@ -48,7 +47,9 @@ class GXSubject(object):
         self.stats_box = {}
 
         print("*********************Read in 129Xe data")
-        self.readinXe()
+        # self.readinXe()
+        self.reconXe()
+        pdb.set_trace()
 
         print("*********************Mask Segmentation")
         self.uteSegmentation()
@@ -72,6 +73,7 @@ class GXSubject(object):
         self.generateHtmlPdf()
 
         time_end = time.time()
+        pdb.set_trace()
         print('*********************finished program')
         print(time_end - time_start)
 
@@ -108,6 +110,21 @@ class GXSubject(object):
 
         plt.show()
 
+    def reconXe(self):
+
+        from GX_Recon_utils import recon_ute, recon_dixon
+        start = time.time()
+
+        ute_file = glob.glob(self.data_dir+'/meas*1H_BHUTE_Radial*.dat')[0]
+        self.ute = abs(recon_ute(ute_file))
+        mid = time.time()
+
+        dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
+        self.gas_highSNR, self.gas_highreso, self.dissolved = recon_dixon(dixon_file)
+        end = time.time()
+        print(mid-start)
+        print(end-mid)
+
     def readinXe(self):
         ## temporal usage
         # read in dissolved and gas Xe
@@ -117,6 +134,7 @@ class GXSubject(object):
         self.gas_highreso = mat_input['gasVol_highreso']
         self.gas_highSNR = mat_input['gasVol_highSNR']
         self.dissolved = mat_input['dissolvedVol']
+        self.ute = abs(mat_input['uteVol'])
 
     def uteSegmentation(self):
         ## temporal usage
@@ -124,9 +142,9 @@ class GXSubject(object):
 
         # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
         # self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
-        fute = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*recon.nii')[0]
+        # fute = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*recon.nii')[0]
         # fute = 'BHUTE_Sub002102_FID49886_recon.nii'
-        self.ute = np.array(nib.load(fute).get_data())
+        # self.ute = np.array(nib.load(fute).get_data())
 
         # self.mask = CNNpredict(ute = self.ute)
         fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
@@ -304,7 +322,7 @@ class GXSubject(object):
 
     def saveMat(self):
 
-        sio.savemat(self.Subject_ID+'.mat',vars(self))
+        sio.savemat(self.data_dir+'/'+self.Subject_ID+'.mat',vars(self))
 
 if __name__ == "__main__":
 
@@ -322,7 +340,6 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # Create helper object
-    from GX_Map_utils import fullMontage
+    # from GX_Map_utils import fullMontage
     subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
     subject.saveMat()
-    pdb.set_trace()

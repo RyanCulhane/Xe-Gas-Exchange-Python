@@ -106,15 +106,15 @@ class MatrixSystemModel(SystemModel):
         if(verbosity):
             print('Calculating Matrix interpolation coefficients...')
 
-        # sample_idx, voxel_idx, kernel_vals = self.proximity_obj.evaluate(traj = traj, overgrid_factor= self.overgrid_factor, matrix_size = self.full_size)
+        sample_idx, voxel_idx, kernel_vals = self.proximity_obj.evaluate(traj = traj, overgrid_factor= self.overgrid_factor, matrix_size = self.full_size)
         #
         # np.save('test1',sample_idx)
         # np.save('test2',voxel_idx)
         # np.save('test3',kernel_vals)
 
-        sample_idx = np.load('test1.npy')
-        voxel_idx = np.load('test2.npy')
-        kernel_vals = np.load('test3.npy')
+        # sample_idx = np.load('test1.npy')
+        # voxel_idx = np.load('test2.npy')
+        # kernel_vals = np.load('test3.npy')
 
         if(verbosity):
             print('Finished calculating Matrix interpolation coefficients. :)')
