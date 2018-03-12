@@ -20,8 +20,8 @@ class GXSubject(object):
         self.filename = []
         self.RBC2barrier = 0.3810
         self.Subject_ID = Subject_ID
-        self.TE90 = 480
         self.FOV = 40.0
+        self.TE90 = 460 # will be replaced later from Dixon
 
         self.gas_highreso = []
         self.gas_highSNR = []
@@ -120,7 +120,7 @@ class GXSubject(object):
         mid = time.time()
 
         dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
-        self.gas_highSNR, self.gas_highreso, self.dissolved = recon_dixon(dixon_file)
+        self.gas_highSNR, self.gas_highreso, self.dissolved, self.TE90 = recon_dixon(dixon_file)
         end = time.time()
         print(mid-start)
         print(end-mid)

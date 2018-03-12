@@ -328,6 +328,7 @@ def recon_dixon(twix_file):
 
     npts = np.shape(data_dixon)[1]
     nFrames = np.shape(data_dixon)[0]+2 # the last 2 are spectrums
+    TE90 = float(meas_dict['alTE'].split()[0])
 
     gen_traj_dict = {
         'npts': npts,
@@ -401,4 +402,4 @@ def recon_dixon(twix_file):
     # gasVol_highSNR = complex_align(gasVol_highSNR)
     # dissolvedVol = complex_align(dissolvedVol)
 
-    return gasVol_highSNR, gasVol_highreso, dissolvedVol
+    return gasVol_highSNR, gasVol_highreso, dissolvedVol, TE90

@@ -479,8 +479,8 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
 def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
     # reder html using the templates and stats
-    temp_clinical = "temp_clinical.html"
-    temp_technical = "temp_technical.html"
+    temp_clinical = "html_tmp/temp_clinical.html"
+    temp_technical = "html_tmp/temp_technical.html"
 
     report_clinical = "report_clinical.html"
     report_technical = "report_technical.html"
