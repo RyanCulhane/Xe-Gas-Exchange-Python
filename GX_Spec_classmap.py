@@ -3,17 +3,17 @@ import scipy.sparse as sps
 import numpy as np
 import pdb
 from bounded_lsq.least_squares import least_squares
-
+from matplotlib import pyplot as plt
 ## reference
 
 # method for calculating lsqcurve fitting
 # https://github.com/nmayorov/bounded-lsq
-
+counter = 1
 class NMR_Mix:
 
     ''' Base Class for curve fitting for spectroscopy '''
 
-    def __init__(self, area, freq, phase, fwhm=[], fwhmL=[],fwhmG=[],method='lorenzian'):
+    def __init__(self, area, freq, phase, fwhm=[],fwhmL=[],fwhmG=[],method='lorenzian'):
         self.area = np.array([area]).flatten()
         self.freq = np.array([freq]).flatten()
         self.fwhm = np.array([fwhm]).flatten()
@@ -30,7 +30,6 @@ class NMR_Mix:
 
     def calc_time_sig(self,t):
         n_pts = np.size(t)
-        pdb.set_trace()
         n_fre = np.size(self.freq) # number of frequency componnets
         time_sig = np.zeros(np.shape(t))
 
@@ -143,7 +142,7 @@ class NMR_TimeFit(NMR_Fit):
 
         # asign function to calculate residuals
         fun = self.calc_residual_time_sig
-        max_nfev = 10000
+        max_nfev = 13000
         # ftol = 1e-900
         xtol = 1e-20
 
@@ -152,10 +151,9 @@ class NMR_TimeFit(NMR_Fit):
         else:
             x0 = np.array([self.area, self.freq, self.fwhm, self.phase]).flatten()
 
-        pdb.set_trace()
         # curve fitting using trust region reflection algorithm
         fit_result = least_squares(fun=fun, x0=x0, jac='2-point', bounds=(-np.inf, np.inf),
-                                   method='trf',xtol=xtol, max_nfev=max_nfev)
+                                   method='dogbox',xtol=xtol, max_nfev=max_nfev)
 
         # resolving the fitting results
         fit_param = fit_result['x']
@@ -172,6 +170,7 @@ class NMR_TimeFit(NMR_Fit):
         n_alias = np.size(alias_index)
 
         while(n_alias>0):
+
             for k in range(0,n_alias):
                 idx = alias_index[k]
                 while(fit_freq[idx]<-halfBW):
@@ -180,11 +179,12 @@ class NMR_TimeFit(NMR_Fit):
                     fit_freq[idx] = fit_freq[idx]-2*halfBW
 
             # fit again after the alias frequency is solved
-            x0 = fit_param
-            fit_param[1,:] = fit_freq
+            x0 = fit_param[:]
+            x0[1,:] = fit_freq # replace the frequency to be within the range
+            x0 = x0.flatten()
 
             fit_result = least_squares(fun=fun, x0=x0, jac='2-point', bounds=(-np.inf, np.inf),
-                                       method='trf',xtol=xtol, max_nfev=max_nfev)
+                                       method='dogbox',xtol=xtol, max_nfev=max_nfev)
 
             fit_param = fit_result['x']
             fit_freq = fit_param[1,:]
@@ -206,7 +206,6 @@ class NMR_TimeFit(NMR_Fit):
             x = np.reshape(x,(4,np.size(x)/4))
             tmpNMRMix = NMR_Mix(area=x[0,:], freq=x[1,:], fwhm=x[2,:], phase=x[3,:],method='lorenzian')
 
-        pdb.set_trace()
         complex_fit_sig = tmpNMRMix.calc_time_sig(self.t)
 
         fit_sig = np.array([np.real(complex_fit_sig), np.imag(complex_fit_sig)])
@@ -225,10 +224,12 @@ mat_input = sio.loadmat(fdata)
 gas_data = mat_input['gasData'].flatten()
 t = mat_input['t'].flatten()
 dis_data = mat_input['disData1_avg'].flatten()
-# gasfit = NMR_TimeFit(time_signal=gas_data, t=t, area= 1e-4, freq=-84, fwhm=30, phase=0, line_boardening=0,zeropad_size=10000)
-# gasfit.fit_time_signal()
+########
+gasfit = NMR_TimeFit(time_signal=gas_data, t=t, area= 1e-4, freq=-84,
+                     fwhm=30, phase=0, line_boardening=0,zeropad_size=10000,method='lorenzian')
+gasfit.fit_time_signal()
 
-disfit = NMR_TimeFit(time_signal=dis_data, t=t, area=[1,1,1],freq=[0,-700,-7400],
+disfit = NMR_TimeFit(time_signal=dis_data, t=t, area=[1,1,1],freq=[0,-700,-7500],
                      fwhmL=[250,200,30],fwhmG=[0,200,0],phase=[0,0,0],line_boardening=0,zeropad_size=np.size(t),method='voigt')
 disfit.fit_time_signal()
 pdb.set_trace()
