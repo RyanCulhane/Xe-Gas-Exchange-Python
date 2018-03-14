@@ -6,9 +6,9 @@ from bounded_lsq.least_squares import least_squares
 from matplotlib import pyplot as plt
 ## reference
 
-# method for calculating lsqcurve fitting
+# method for calculating lsqcurve fitting, used dogleg method for optimization
 # https://github.com/nmayorov/bounded-lsq
-counter = 1
+
 class NMR_Mix:
 
     ''' Base Class for curve fitting for spectroscopy '''
@@ -117,8 +117,8 @@ class NMR_TimeFit(NMR_Fit):
                          freq=freq, fwhm=fwhm, fwhmL=fwhmL,fwhmG=fwhmG, method=method,
                          phase=phase, line_boardening=line_boardening, zeropad_size=zeropad_size)
 
-    def fit_time_signal(self):
-        fit_param = self.calc_time_fit()
+    def fit_time_signal(self,bounds=(-np.inf, np.inf)):
+        fit_param = self.calc_time_fit(bounds)
 
         # parsing the fitting results
         fit_vec = np.multiply(fit_param[0,:],np.exp(1j*np.pi*fit_param[-1,:]/180.0))
@@ -137,7 +137,7 @@ class NMR_TimeFit(NMR_Fit):
 
             self.reset_components(area=fit_area, freq=fit_freq, fwhm=fit_fwhm, phase=fit_phase)
 
-    def calc_time_fit(self):
+    def calc_time_fit(self,bounds):
         ## function fit the time domain signal using least square curve fitting running trust region reflection algorithm
 
         # asign function to calculate residuals
@@ -152,7 +152,7 @@ class NMR_TimeFit(NMR_Fit):
             x0 = np.array([self.area, self.freq, self.fwhm, self.phase]).flatten()
 
         # curve fitting using trust region reflection algorithm
-        fit_result = least_squares(fun=fun, x0=x0, jac='2-point', bounds=(-np.inf, np.inf),
+        fit_result = least_squares(fun=fun, x0=x0, jac='2-point', bounds=bounds,
                                    method='dogbox',xtol=xtol, max_nfev=max_nfev)
 
         # resolving the fitting results
@@ -218,18 +218,18 @@ class NMR_TimeFit(NMR_Fit):
 
 
 ## read in raw data from matlab
-import scipy.io as sio
-fdata = 'spect_data.mat'
-mat_input = sio.loadmat(fdata)
-gas_data = mat_input['gasData'].flatten()
-t = mat_input['t'].flatten()
-dis_data = mat_input['disData1_avg'].flatten()
-########
-gasfit = NMR_TimeFit(time_signal=gas_data, t=t, area= 1e-4, freq=-84,
-                     fwhm=30, phase=0, line_boardening=0,zeropad_size=10000,method='lorenzian')
-gasfit.fit_time_signal()
-
-disfit = NMR_TimeFit(time_signal=dis_data, t=t, area=[1,1,1],freq=[0,-700,-7500],
-                     fwhmL=[250,200,30],fwhmG=[0,200,0],phase=[0,0,0],line_boardening=0,zeropad_size=np.size(t),method='voigt')
-disfit.fit_time_signal()
-pdb.set_trace()
+# import scipy.io as sio
+# fdata = 'spect_data.mat'
+# mat_input = sio.loadmat(fdata)
+# gas_data = mat_input['gasData'].flatten()
+# t = mat_input['t'].flatten()
+# dis_data = mat_input['disData1_avg'].flatten()
+# ########
+# gasfit = NMR_TimeFit(time_signal=gas_data, t=t, area= 1e-4, freq=-84,
+#                      fwhm=30, phase=0, line_boardening=0,zeropad_size=10000,method='lorenzian')
+# gasfit.fit_time_signal()
+#
+# disfit = NMR_TimeFit(time_signal=dis_data, t=t, area=[1,1,1],freq=[0,-700,-7500],
+#                      fwhmL=[250,200,30],fwhmG=[0,200,0],phase=[0,0,0],line_boardening=0,zeropad_size=np.size(t),method='voigt')
+# disfit.fit_time_signal()
+# pdb.set_trace()
