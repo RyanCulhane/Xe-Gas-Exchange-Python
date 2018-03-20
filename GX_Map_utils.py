@@ -54,7 +54,7 @@ def decideStartInterval(mask):
 
     ind_start, ind_end =  getIndexMaxOnes(binary_arr)
 
-    ind_inter = np.round((ind_end-ind_start)/num_slice).astype(int)
+    ind_inter = np.ceil((ind_end-ind_start)/num_slice).astype(int)
 
     return ind_start, ind_inter
 
@@ -163,9 +163,9 @@ def register(gas_highreso, ute, mask):
     elastixImageFilter.SetFixedImage(sitk_gas) # gas highreso
     elastixImageFilter.SetMovingImage(sitk_mask) # mask
 
-    # set up parameters for the warpping, we use affine first and then use bspline interpolation for non-rigid warpping
+    # set up parameters for the warpping, we use affine first
     parameterMapVector = sitk.VectorOfParameterMap()
-    parameterMapVector.append(sitk.GetDefaultParameterMap("affine"))
+    parameterMapVector.append(sitk.GetDefaultParameterMap("affine")) #"rigid"
     elastixImageFilter.SetParameterMap(parameterMapVector)
 
     elastixImageFilter.Execute()
@@ -477,6 +477,27 @@ def binStats(rawdata, bindata, mask, mask_all, key, recondata=None):
 
     return statsbox
 
+def pdfScaleMerge(input_file1, input_file2, output_file, scale=1):
+
+    from pyPdf import PdfFileWriter, PdfFileReader
+
+    with open(input_file1, "rb") as in_f1:
+        with open(input_file2,'rb') as in_f2:
+            input1 = PdfFileReader(in_f1)
+            input2 = PdfFileReader(in_f2)
+            output = PdfFileWriter()
+
+            p = input1.getPage(0)
+            p.scale(4,4) # scale it up by a factor of 2
+            output.addPage(p)
+
+            p = input2.getPage(0)
+            p.scale(4,4) # scale it up by a factor of 2
+            output.addPage(p)
+
+            with open(output_file, "wb") as out_f:
+                output.write(out_f)
+
 def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
     # reder html using the templates and stats
     temp_clinical = "html_tmp/temp_clinical.html"
@@ -555,14 +576,37 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
         'margin-right': 0.1,
         'margin-bottom': 0.1,
         'margin-left': 0.1,
-        # 'dpi':300,
+        'dpi':300,
         # 'zoom':2,
-        # 'disable-smart-shrinking':'',
+        'disable-smart-shrinking':'',
         'encoding': "UTF-8",
         }
 
-    pdfkit.from_file(report_clinical, data_dir+'/report_clinical_'+data_dir+'.pdf',options=options)
-    pdfkit.from_file(report_technical, data_dir+'/report_technical_'+data_dir+'.pdf',options=options)
+    # generate and scale PDF
+    pdf_clinical = data_dir+'/report_clinical_'+data_dir+'.pdf'
+    pdf_technical = data_dir+'/report_technical_'+data_dir+'.pdf'
+    pdf_merge = data_dir+'/report_'+data_dir+'.pdf'
+
+    pdfkit.from_file(report_clinical, pdf_clinical, options=options)
+    pdfkit.from_file(report_technical,pdf_technical,options=options)
 
     os.remove(report_technical)
     os.remove(report_clinical)
+
+    # scale and merge pdf to convert to ppt
+    pdfScaleMerge(input_file1=pdf_clinical, input_file2=pdf_technical, output_file=pdf_merge, scale=4)
+
+    # generate ppt
+    genPPT(pdf_file=pdf_merge)
+
+    # remove files generated when making ppt
+    os.remove(data_dir+'/report_'+data_dir+'_1.pdf')
+    os.remove(data_dir+'/report_'+data_dir+'_1.jpg')
+    os.remove(data_dir+'/report_'+data_dir+'_2.pdf')
+    os.remove(data_dir+'/report_'+data_dir+'_2.jpg')
+
+def genPPT(pdf_file):
+    # generate ppt from pdf
+    from ppt_pdf.cli_pdf_to_ppt import PdfToPpt
+
+    PdfToPpt(pdf_file=pdf_file).execute()

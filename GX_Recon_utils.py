@@ -7,6 +7,7 @@ import os
 import re
 from numpy.ctypeslib import ndpointer
 from GX_Twix_parser import readTwix
+from matplotlib import pyplot as plt
 
 def generate_radial_1D_traj(dwell_time, grad_delay_time, ramp_time, plat_time, decay_time, npts,oversampling):
     # generate 1d radial distance array based on the timing and the amplitude and the gradient
@@ -318,11 +319,12 @@ def recon_dixon(twix_file):
     ## read in data
     scans, evps = readTwix(twix_file)
 
-    data_dixon = np.asarray([x.data for x in scans[:-2]])
+    data_dixon = np.asarray([x.data for x in scans[:-2]]) # the last 2 are spectrums
+
     data_spect = np.asarray(scans[-1].data)
     data_dis = data_dixon[3::2,:]
     data_gas = data_dixon[2::2,:] # the first gas is contaminated, so we throw it away
-
+    
     # parse hdr "MEAS" for more information
     meas_dict = read_twix_hdr(evps[2][1])
 
@@ -369,7 +371,7 @@ def recon_dixon(twix_file):
         'overgrid_factor': 3,
         'n_pipe_iter': 20,
         'image_size': (npts, npts, npts),
-        'verbosity': 0,
+        'verbosity': 1,
     }
     print('Starting recon gas high SNR')
     gasVol_highSNR = recon(**recon_dict_highSNR)
@@ -382,7 +384,7 @@ def recon_dixon(twix_file):
         'overgrid_factor': 3,
         'n_pipe_iter': 20,
         'image_size': (npts, npts, npts),
-        'verbosity': 0,
+        'verbosity': 1,
     }
     print('Starting recon gas high resolution')
     gasVol_highreso = recon(**recon_dict_highreso)

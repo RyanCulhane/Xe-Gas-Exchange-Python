@@ -3,7 +3,9 @@
 *.pyc
 *.pptx
 *.tex
+*.jpg
 /Raw_Data
+*.log
 *.mat
 *.txt
 *.png

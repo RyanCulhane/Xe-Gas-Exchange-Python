@@ -207,6 +207,7 @@ class LSQgridded(GriddedReconModel):
         if(self.verbosity):
             print('-- Calculating IFFT ...')
 
+        reconVol = np.fft.ifftshift(reconVol)
         reconVol = np.fft.ifftn(reconVol)
         reconVol = np.fft.ifftshift(reconVol)
 

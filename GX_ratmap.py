@@ -10,16 +10,16 @@ from matplotlib import pyplot as plt
 
 import pdb
 
-class GXSubject(object):
-    'A gas exchange subject'
-
+class GXRat(object):
     def __init__(self, data_dir, Subject_ID):
-        print("*********************Initiate subject. Today is a beautiful day!")
+        print("*********************Initiate a new rat. Today is a beautiful day!")
+        time_start = time.time()
         self.data_dir = data_dir
-        self.RBC2barrier = 0.0
+        self.filename = []
+        self.RBC2barrier = 0.580
         self.Subject_ID = Subject_ID
-        self.FOV = 40.0
-        self.TE90 = 460 # will be replaced later from Dixon
+        self.TE90 = 210
+        self.FOV = 5.0
 
         self.gas_highreso = []
         self.gas_highSNR = []
@@ -42,23 +42,19 @@ class GXSubject(object):
         self.mask_reg = []
         self.mask_reg_vent = []
 
+        self.key_box = {}
         self.stats_box = {}
 
-    def GXRecon(self):
-
         print("*********************Read in 129Xe data")
-        # self.readinXe()
-        self.spectFit()
-        self.reconXe()
-        print("******RBC:barrier = "+str(self.RBC2barrier))
+        self.readinXe()
 
         print("*********************Mask Segmentation")
-        self.uteSegmentation()
+        # self.uteSegmentation()
         self.alignImages()
         # self.checkAlignment()
+        # pdb.set_trace()
         self.uteRegister()
 
-    def GXMapping(self):
         print("*********************Gas BiasFied Correction, Binning and Ventilation Mask")
         self.gasBiasFieldCor()
         self.gasBinning()
@@ -72,9 +68,11 @@ class GXSubject(object):
 
         print("*********************Clnical Report")
         self.generateFigures()
-        self.generateHtmlPdfPPT()
+        self.generateHtmlPdf()
 
+        time_end = time.time()
         print('*********************finished program')
+        print(time_end - time_start)
 
     def checkAlignment(self):
         # check if all the images are the same alignment
@@ -109,41 +107,20 @@ class GXSubject(object):
 
         plt.show()
 
-    def reconXe(self):
-
-        from GX_Recon_utils import recon_ute, recon_dixon
-        start = time.time()
-
-        ute_file = glob.glob(self.data_dir+'/meas*1H_BHUTE_Radial*.dat')[0]
-        self.ute = abs(recon_ute(ute_file))
-        mid = time.time()
-
-        dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
-        self.gas_highSNR, self.gas_highreso, self.dissolved, self.TE90 = recon_dixon(dixon_file)
-        end = time.time()
-        print(mid-start)
-        print(end-mid)
-
     def readinXe(self):
         ## temporal usage
         # read in dissolved and gas Xe
-        fdata = self.data_dir+'/Sub'+self.Subject_ID+'_data.mat'
+        # fdata = self.data_dir+'/Sub'+self.Subject_ID+'_data.mat'
+        fdata = self.data_dir+'/data.mat'
 
         mat_input = sio.loadmat(fdata)
-        self.gas_highreso = mat_input['gasVol_highreso']
-        self.gas_highSNR = mat_input['gasVol_highSNR']
-        self.dissolved = mat_input['dissolvedVol']
-        self.ute = abs(mat_input['uteVol'])
-
-    def spectFit(self):
-        from GX_Spec_utils import spect_fit, print_fit
-
-        cali_file = glob.glob(self.data_dir+'/meas*Xe_fid_cali*.dat')[0]
-        dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
-
-        self.RBC2barrier, self.spectfit_box = spect_fit(twix_dixon_file=dixon_file, twix_cali_file=cali_file)
-
-        print_fit(fit_box=self.spectfit_box, Subject_ID=self.Subject_ID)
+        self.gas_highreso = mat_input['gas_highreso']
+        self.gas_highSNR = mat_input['gas_highSNR']
+        self.dissolved = mat_input['dissolved']
+        self.ute = abs(mat_input['ute'])
+        self.mask = mat_input['mask'].astype(bool)
+        self.RBC2barrier = mat_input['RBC2barrier'].flatten()
+        self.TE90 = mat_input['TE90'].flatten()
 
     def uteSegmentation(self):
         ## temporal usage
@@ -155,14 +132,15 @@ class GXSubject(object):
         # fute = 'BHUTE_Sub002102_FID49886_recon.nii'
         # self.ute = np.array(nib.load(fute).get_data())
 
-        self.mask = CNNpredict(ute = self.ute)
-        # fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
-        # self.mask = np.array(nib.load(fmask).get_data())
+        # self.mask = CNNpredict(ute = self.ute)
+        fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
+        self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 
         def alignrot(x):
-            return(np.flip(np.flip(np.flip(x,0),1),2))
+            # return(np.flip(np.flip(np.flip(x,0),1),2))
+            return(np.flip(np.transpose(x,(2,0,1)),2))
 
         self.ute = alignrot(self.ute)
         self.mask = alignrot(self.mask)
@@ -217,32 +195,56 @@ class GXSubject(object):
                                              meanRbc2barrier = self.RBC2barrier)
     def barBinning(self):
         ## binning for barrier
-        from GX_defineColormaps import thre_bar
-        from GX_Map_utils import disBinning
+        # from GX_defineColormaps import thre_bar
+        # from GX_Map_utils import disBinning
+        #
+        # cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
+        # cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
+        #
+        # self.bar2gas, self.bar2gas_binning = disBinning(discomp       = self.barrier,
+        #                                                 gas_highSNR   = abs(self.gas_highSNR),
+        #                                                 bin_threshold = thre_bar,
+        #                                                 mask          = self.mask_reg_vent,
+        #                                                 cor           = cor_TE90*cor_flipoff)
 
-        cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
-        cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
+       from GX_defineColormaps import thre_vent
+       from GX_Map_utils import gasBinning
+       bar2gas = np.zeros(np.shape(self.barrier))
+       mask = self.mask_reg_vent
+       bar2gas[mask] = np.divide(self.barrier[mask],abs(self.gas_highSNR[mask]))
+       bar2gas[bar2gas<0] = 1e-5
+       self.bar2gas = bar2gas
 
-        self.bar2gas, self.bar2gas_binning = disBinning(discomp       = self.barrier,
-                                                        gas_highSNR   = abs(self.gas_highSNR),
-                                                        bin_threshold = thre_bar,
-                                                        mask          = self.mask_reg_vent,
-                                                        cor           = cor_TE90*cor_flipoff)
+       _, self.bar2gas_binning,_ = gasBinning(gas_highreso  = bar2gas,
+                                               bin_threshold = thre_vent,
+                                               mask          = self.mask_reg_vent,
+                                               percentile    = 99)
 
     def rbcBinning(self):
         ## binning for barrier
-        from GX_defineColormaps import thre_rbc
-        from GX_Map_utils import disBinning
+        # from GX_defineColormaps import thre_rbc
+        # from GX_Map_utils import disBinning
+        #
+        # cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
+        # cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
+        #
+        # self.rbc2gas, self.rbc2gas_binning = disBinning(discomp       = self.rbc,
+        #                                                 gas_highSNR   = abs(self.gas_highSNR),
+        #                                                 bin_threshold = thre_rbc,
+        #                                                 mask          = self.mask_reg_vent,
+        #                                                 cor           = cor_TE90*cor_flipoff)
+        from GX_defineColormaps import thre_vent
+        from GX_Map_utils import gasBinning
+        rbc2gas = np.zeros(np.shape(self.rbc))
+        mask = self.mask_reg_vent
+        rbc2gas[mask] = np.divide(self.rbc[mask],abs(self.gas_highSNR[mask]))
+        rbc2gas[rbc2gas<0] = 1e-5
+        self.rbc2gas = rbc2gas
 
-        cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
-        cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
-
-        self.rbc2gas, self.rbc2gas_binning = disBinning(discomp       = self.rbc,
-                                                        gas_highSNR   = abs(self.gas_highSNR),
-                                                        bin_threshold = thre_rbc,
-                                                        mask          = self.mask_reg_vent,
-                                                        cor           = cor_TE90*cor_flipoff)
-        # pdb.set_trace()
+        _, self.rbc2gas_binning,_ = gasBinning(gas_highreso  = rbc2gas,
+                                                bin_threshold = thre_vent,
+                                                mask          = self.mask_reg_vent,
+                                                percentile    = 99)
 
     def generateStats(self):
         ## calculate statistics
@@ -274,7 +276,8 @@ class GXSubject(object):
         self.stats_box = gas_stats
         self.stats_box.update(barrier_stats)
         self.stats_box.update(rbc_stats)
-        self.stats_box['inflation'] = np.multiply(np.sum(self.mask_reg),self.FOV**3/np.shape(self.mask_reg)[0]**3/1000.0)
+        # the unit of inflation is cc
+        self.stats_box['inflation'] = np.multiply(np.sum(self.mask_reg),self.FOV**3/np.shape(self.mask_reg)[0]**3)
 
     def generateFigures(self):
         ## make montage, plot histogram, and generate report
@@ -312,15 +315,23 @@ class GXSubject(object):
         venhistogram['hist_name'] = self.data_dir+'/ven_hist.png'
         makeHistogram(**venhistogram)
 
-        barhistogram['data'] = self.bar2gas[self.mask_reg_vent]
-        barhistogram['hist_name'] = self.data_dir+'/bar_hist.png'
-        makeHistogram(**barhistogram)
+        venhistogram['data'] = self.bar2gas[self.mask_reg_vent]
+        venhistogram['hist_name'] = self.data_dir+'/bar_hist.png'
+        makeHistogram(**venhistogram)
 
-        rbchistogram['data'] = self.rbc2gas[self.mask_reg_vent]
-        rbchistogram['hist_name'] = self.data_dir+'/rbc_hist.png'
-        makeHistogram(**rbchistogram)
+        venhistogram['data'] = self.rbc2gas[self.mask_reg_vent]
+        venhistogram['hist_name'] = self.data_dir+'/rbc_hist.png'
+        makeHistogram(**venhistogram)
 
-    def generateHtmlPdfPPT(self):
+        # barhistogram['data'] = self.bar2gas[self.mask_reg_vent]
+        # barhistogram['hist_name'] = self.data_dir+'/bar_hist.png'
+        # makeHistogram(**barhistogram)
+        #
+        # rbchistogram['data'] = self.rbc2gas[self.mask_reg_vent]
+        # rbchistogram['hist_name'] = self.data_dir+'/rbc_hist.png'
+        # makeHistogram(**rbchistogram)
+
+    def generateHtmlPdf(self):
 
         from GX_Map_utils import genHtmlPdf
 
@@ -333,41 +344,6 @@ class GXSubject(object):
 
         sio.savemat(self.data_dir+'/'+self.Subject_ID+'.mat',vars(self))
 
-    def readFromMat(self):
-        # read in all members from a saved matlab file
-        fdata = self.data_dir+'/'+self.Subject_ID+'.mat'
-
-        if not os.path.isfile(fdata):
-            raise Exception('Mat file of this subject does not exist, need to create it')
-
-        mat_input = sio.loadmat(fdata)
-
-        self.RBC2barrier = mat_input['RBC2barrier'].flatten()
-        self.TE90 = mat_input['TE90'].flatten() # will be replaced later from Dixon
-
-        self.gas_highreso = mat_input['gas_highreso']
-        self.gas_highSNR = mat_input['gas_highSNR']
-        self.gas_highreso_cor = mat_input['gas_highreso_cor']
-        self.gas_biasfield = mat_input['gas_biasfield']
-        self.dissolved = mat_input['dissolved']
-
-        self.rbc = mat_input['rbc']
-        self.barrier = mat_input['barrier']
-
-        self.ventilation = mat_input['ventilation']
-        self.rbc2gas = mat_input['rbc2gas']
-        self.bar2gas = mat_input['bar2gas']
-        self.ven_binning = mat_input['ven_binning']
-        self.rbc2gas_binning = mat_input['rbc2gas_binning']
-        self.bar2gas_binning = mat_input['bar2gas_binning']
-
-        self.ute = mat_input['ute']
-        self.mask = mat_input['mask'].astype(bool)
-        self.ute_reg = mat_input['ute_reg']
-        self.mask_reg = mat_input['mask_reg'].astype(bool)
-        self.mask_reg_vent = mat_input['mask_reg_vent'].astype(bool)
-
-        self.stats_box = mat_input['stats_box']
 
 if __name__ == "__main__":
 
@@ -385,9 +361,7 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # Create helper object
-    # from GX_Map_utils import fullMontage
-    subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
-    # subject.readFromMat()
-    subject.GXRecon()
-    subject.GXMapping()
-    subject.saveMat()
+    from GX_Map_utils import fullMontage
+    rat = GXRat(data_dir=data_dir, Subject_ID=Subject_ID)
+    rat.saveMat()
+    pdb.set_trace()
