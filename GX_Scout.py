@@ -12,7 +12,7 @@ current_day = dt.date.today()
 
 # find all folders that are modified today
 local = '/home/ziyi/Gas_Exchange'
-drive = '/media/ziyi'
+drive = '/media/rawdata'
 
 # acquire list of subjects that have been processed
 subject_pattern = re.compile('[0-9]{6}')

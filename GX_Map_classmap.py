@@ -49,8 +49,9 @@ class GXSubject(object):
         print("*********************Read in 129Xe data")
         # self.readinXe()
         self.spectFit()
+        pdb.set_trace()
         self.reconXe()
-        print("******RBC:barrier = "+str(self.RBC2barrier))
+
 
         print("*********************Mask Segmentation")
         self.uteSegmentation()

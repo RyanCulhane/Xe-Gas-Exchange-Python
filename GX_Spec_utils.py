@@ -40,6 +40,9 @@ def spect_fit(twix_cali_file, twix_dixon_file):
                          fwhmL=[250,200,30],fwhmG=[0,200,0],phase=[0,0,0],line_boardening=0,zeropad_size=np.size(t),method='voigt')
     disfit.fit_time_signal()
 
+    print("**************************************************************")
+    print("Calibration RBC:barrier = "+str(disfit.area[0]/disfit.area[1]))
+
     ## ************************************************part 2, fit on dixon bonus
     scans, evps = readTwix(twix_dixon_file)
     data_dixon = np.asarray(scans[-1].data)
@@ -64,6 +67,9 @@ def spect_fit(twix_cali_file, twix_dixon_file):
     # set up bounds to constrain frequency and fwhm change
     lb = np.stack((0.33*area,freq-1.0,0.9*fwhmL,0.9*fwhmG-1.0,[-np.inf,-np.inf,-np.inf])).flatten()
     ub = np.stack((3.00*area,freq+1.0,1.1*fwhmL,1.1*fwhmG+1.0,[+np.inf,+np.inf,+np.inf])).flatten()
+
+    # lb = np.stack((0.33*area,[-np.inf,-np.inf,-np.inf],0.9*fwhmL,0.9*fwhmG-1.0,[-np.inf,-np.inf,-np.inf])).flatten()
+    # ub = np.stack((3.00*area,[+np.inf,+np.inf,+np.inf],1.1*fwhmL,1.1*fwhmG+1.0,[+np.inf,+np.inf,+np.inf])).flatten()
     bounds = (lb,ub)
 
     dixonfit = NMR_TimeFit(time_signal=data_dixon, t=t, area=area,freq=freq,
@@ -93,5 +99,7 @@ def print_fit(fit_box,Subject_ID):
         print "{:<8}{:<10}{:<10}{:<10}".format(k, round(v[0],2),round(v[1],2),round(v[2],2))
 
     v = fit_box['Area']
-    print("{:<8}{:<10.2E}{:<10.2E}{:<10.2E}".format(k,v[0],v[1],v[2]))
-    print "***************************************************************"
+    print("{:<8}{:<10.2E}{:<10.2E}{:<10.2E}".format('Area',v[0],v[1],v[2]))
+    print("**************************************************************")
+    print("******RBC:barrier = "+str(fit_box['Area'][0]/fit_box['Area'][1]))
+    print "**************************************************************"
