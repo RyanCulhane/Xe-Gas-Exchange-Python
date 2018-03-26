@@ -377,6 +377,7 @@ if __name__ == "__main__":
         print "Usage 2: python GX_classmap.py <data directory> <Subject_ID>"
         sys.exit(-1)
 
+    # pdb.set_trace()
     # Create helper object
     # from GX_Map_utils import fullMontage
     start = time.time()

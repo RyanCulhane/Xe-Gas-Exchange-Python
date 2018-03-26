@@ -16,6 +16,7 @@ drive = '/media/rawdata'
 
 # acquire list of subjects that have been processed
 subject_pattern = re.compile('[0-9]{6}')
+key = 0
 
 local_subjects = [ name for name in os.listdir(local) if os.path.isdir(os.path.join(local, name)) ]
 
@@ -44,6 +45,7 @@ for path in drive_subjects:
             if (subject_name not in local_subjects):
 
                 print('new scan completed: '+subject_name)
+                key = 1
 
                 subject_path = local_subjects+'/'+subject_name
 
@@ -53,3 +55,12 @@ for path in drive_subjects:
                 copy2(list_cali[0],subject_path)
                 copy2(list_dixon[0],subject_path)
                 copy2(list_ute[0],subject_path)
+
+                # lauch the process program
+                from GX_Process import GX_Process
+                GX_Process(data_dir=local, Subject_ID=subject_name)
+                # finish the process program
+                print('Process finished, complete time: '+ dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+if(key==0):
+    print('No new subject found, check time: '+ dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
