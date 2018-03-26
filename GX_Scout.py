@@ -11,7 +11,7 @@ current_day = dt.date.today()
 # current_day = dt.date(2018,3,5)
 
 # find all folders that are modified today
-local = '/home/ziyi/Gas_Exchange'
+local = '/home/ziyiw/Patients'
 drive = '/media/rawdata'
 
 # acquire list of subjects that have been processed
@@ -45,9 +45,11 @@ for path in drive_subjects:
 
                 print('new scan completed: '+subject_name)
 
-                os.makedirs(subject_name)
+                subject_path = local_subjects+'/'+subject_name
+
+                os.makedirs(subject_path)
 
                 # copy files to local
-                copy2(list_cali[0],subject_name)
-                copy2(list_dixon[0],subject_name)
-                copy2(list_ute[0],subject_name)
+                copy2(list_cali[0],subject_path)
+                copy2(list_dixon[0],subject_path)
+                copy2(list_ute[0],subject_path)

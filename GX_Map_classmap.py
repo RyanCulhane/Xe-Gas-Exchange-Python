@@ -47,11 +47,9 @@ class GXSubject(object):
     def GXRecon(self):
 
         print("*********************Read in 129Xe data")
-        # self.readinXe()
-        self.spectFit()
-        pdb.set_trace()
-        self.reconXe()
 
+        self.spectFit()
+        self.reconXe()
 
         print("*********************Mask Segmentation")
         self.uteSegmentation()
@@ -113,17 +111,12 @@ class GXSubject(object):
     def reconXe(self):
 
         from GX_Recon_utils import recon_ute, recon_dixon
-        start = time.time()
 
         ute_file = glob.glob(self.data_dir+'/meas*1H_BHUTE_Radial*.dat')[0]
         self.ute = abs(recon_ute(ute_file))
-        mid = time.time()
 
         dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
         self.gas_highSNR, self.gas_highreso, self.dissolved, self.TE90 = recon_dixon(dixon_file)
-        end = time.time()
-        print(mid-start)
-        print(end-mid)
 
     def readinXe(self):
         ## temporal usage
@@ -243,7 +236,6 @@ class GXSubject(object):
                                                         bin_threshold = thre_rbc,
                                                         mask          = self.mask_reg_vent,
                                                         cor           = cor_TE90*cor_flipoff)
-        # pdb.set_trace()
 
     def generateStats(self):
         ## calculate statistics
@@ -373,7 +365,7 @@ class GXSubject(object):
 if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
-        data_dir = sys.argv[1]
+        data_dir = '/home/ziyiw/Patients/'+sys.argv[1]
         Subject_ID = sys.argv[1]
 
     elif(len(sys.argv) == 3):
@@ -387,8 +379,11 @@ if __name__ == "__main__":
 
     # Create helper object
     # from GX_Map_utils import fullMontage
+    start = time.time()
     subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
     # subject.readFromMat()
     subject.GXRecon()
     subject.GXMapping()
     subject.saveMat()
+    endt = time.time()
+    print(endt-start)

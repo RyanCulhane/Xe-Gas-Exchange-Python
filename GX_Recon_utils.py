@@ -276,7 +276,7 @@ def recon_ute(twix_file):
         'nFrames':nFrames,
         'traj_type':3, #halton Spiral
         'dwell_time': float(meas_dict['alDwellTime'].split()[0])/1000.0,
-        'oversampling': 2,
+        'oversampling': 3,
         'ramp_time': float(meas_dict['RORampTime']),
         'plat_time': 2500,
         'decay_time': 60,
@@ -324,7 +324,7 @@ def recon_dixon(twix_file):
     data_spect = np.asarray(scans[-1].data)
     data_dis = data_dixon[3::2,:]
     data_gas = data_dixon[2::2,:] # the first gas is contaminated, so we throw it away
-    
+
     # parse hdr "MEAS" for more information
     meas_dict = read_twix_hdr(evps[2][1])
 
@@ -337,7 +337,7 @@ def recon_dixon(twix_file):
         'nFrames':np.floor(nFrames/2).astype(int),
         'traj_type':3, #halton Spiral
         'dwell_time': float(meas_dict['alDwellTime'].split()[0])/1000.0,
-        'oversampling': 2,
+        'oversampling': 3,
         'ramp_time': float(meas_dict['RORampTime']),
         'plat_time': 2500,
         'decay_time': 60,

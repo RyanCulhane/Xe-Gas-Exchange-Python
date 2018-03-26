@@ -86,6 +86,15 @@ venhistogram = {
 }
 ## average and std for the reference cohort of the statics
 
+histogram_ticks = {
+        'ven_xticks': [0.0, 0.5, 1.0],
+        'ven_yticks': [0.02, 0.04, 0.06],
+        'bar_xticks': [0.0, 1.0, 2.0, 2.5],
+        'bar_yticks': [0.05, 0.10, 0.15],
+        'rbc_xticks': [0.0, 0.5, 1.0, 1.2],
+        'rbc_yticks': [0.05, 0.10],
+}
+
 referece_stats = {
         'r_ven_defect_ave': '1',
         'r_ven_defect_std':'<1',

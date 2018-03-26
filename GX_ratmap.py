@@ -348,7 +348,7 @@ class GXRat(object):
 if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
-        data_dir = sys.argv[1]
+        data_dir = '/home/ziyiw/Patients/'+sys.argv[1]
         Subject_ID = sys.argv[1]
 
     elif(len(sys.argv) == 3):

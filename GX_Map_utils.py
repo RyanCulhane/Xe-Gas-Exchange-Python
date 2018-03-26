@@ -7,6 +7,7 @@ from skimage import color
 import warnings
 import math
 from scipy.ndimage.morphology import binary_dilation
+import pdfkit
 
 from matplotlib import pyplot as plt
 
@@ -347,7 +348,7 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     ## plot histogram for the gas exchange ratio maps
     # make a thick frame
     from matplotlib.pyplot import rc, xlim, ylim
-
+    # pdb.set_trace()
     rc('axes', linewidth=4)
 
     fig, ax = plt.subplots(figsize=(9, 6))
@@ -361,11 +362,11 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
 
     weights = np.ones_like(data)/float(len(data))
 
-    num, bins, patches = ax.hist(data, num_bins,color=color,weights=weights)
+    # plot histogram
+    num, bins, patches = ax.hist(data, num_bins,color=color,weights=weights,edgecolor='black')
 
     # define and plot healthy reference line
     normal = refer_fit[0]*np.exp(-((bins-refer_fit[1])/refer_fit[2])**2);
-
     ax.plot(bins, normal, '--',color='k',linewidth=4)
 
     # ax.set_xlabel('Pixel Intensity', fontsize=26)
@@ -376,23 +377,30 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     plt.locator_params(axis='x', nbins=4, nticks=4)
 
     # barrier/RBC add a tick on the end
+    from GX_defineColormaps import histogram_ticks
     if('bar_hist.png' in hist_name):
-        xticks = [0.0, 1.0, 2.0, 2.5]
-        ticklabels = ['0.0', '1.0','2.0','2.5']
-        plt.xticks(xticks, ticklabels)
+        xticks = histogram_ticks['bar_xticks']
+        yticks = histogram_ticks['bar_yticks']
 
     if('rbc_hist.png' in hist_name):
-        xticks = [0.0, 0.5, 1.0, 1.2]
-        ticklabels = ['0.0', '0.5', '1.0','1.2']
-        plt.xticks(xticks, ticklabels)
+        xticks = histogram_ticks['rbc_xticks']
+        yticks = histogram_ticks['rbc_yticks']
 
-    plt.locator_params(axis='y', nbins=4, nticks=4)
-    plt.xticks(fontsize=40)
-    plt.yticks(fontsize=40)
+    if('ven_hist.png' in hist_name):
+        xticks = histogram_ticks['ven_xticks']
+        yticks = histogram_ticks['ven_yticks']
+
+    # plt.locator_params(axis='y', nbins=4, nticks=4)
+    xticklabels = ['{:.1f}'.format(x) for x in xticks]
+    yticklabels = ['{:.2f}'.format(x) for x in yticks]
+
+    plt.xticks(xticks, xticklabels,fontsize=40)
+    plt.yticks(yticks, yticklabels,fontsize=40)
 
 
     # Tweak spacing to prevent clipping of ylabel
     fig.tight_layout()
+    # pdb.set_trace()
     plt.savefig(hist_name)
 
 def fSNR_3T(image,mask):
@@ -551,6 +559,7 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
     from GX_defineColormaps import referece_stats
     html_parameters.update(referece_stats)
 
+    # generate pdf from html
     # reder html second
     with open(temp_clinical, 'r') as f:
         data = f.read()
@@ -566,12 +575,9 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
     with open(report_technical, 'w') as o:
         o.write(rendered)
 
-    # generate pdf from html
-    import pdfkit
-
     options = {
-        'page-width':160,#320,
-        'page-height':80,#160,
+        'page-width':300,#320,
+        'page-height':150,#160,
         'margin-top': 1,
         'margin-right': 0.1,
         'margin-bottom': 0.1,
@@ -583,27 +589,30 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box):
         }
 
     # generate and scale PDF
-    pdf_clinical = data_dir+'/report_clinical_'+data_dir+'.pdf'
-    pdf_technical = data_dir+'/report_technical_'+data_dir+'.pdf'
-    pdf_merge = data_dir+'/report_'+data_dir+'.pdf'
+    pdf_clinical = data_dir+'/report_clinical_'+Subject_ID+'.pdf'
+    pdf_technical = data_dir+'/report_technical_'+Subject_ID+'.pdf'
+    pdf_merge = data_dir+'/report_'+Subject_ID+'.pdf'
+
+    # pdb.set_trace()
 
     pdfkit.from_file(report_clinical, pdf_clinical, options=options)
     pdfkit.from_file(report_technical,pdf_technical,options=options)
 
+    # pdb.set_trace()
     os.remove(report_technical)
     os.remove(report_clinical)
 
     # scale and merge pdf to convert to ppt
-    pdfScaleMerge(input_file1=pdf_clinical, input_file2=pdf_technical, output_file=pdf_merge, scale=4)
+    pdfScaleMerge(input_file1=pdf_clinical, input_file2=pdf_technical, output_file=pdf_merge, scale=1)
 
     # generate ppt
     genPPT(pdf_file=pdf_merge)
 
     # remove files generated when making ppt
-    os.remove(data_dir+'/report_'+data_dir+'_1.pdf')
-    os.remove(data_dir+'/report_'+data_dir+'_1.jpg')
-    os.remove(data_dir+'/report_'+data_dir+'_2.pdf')
-    os.remove(data_dir+'/report_'+data_dir+'_2.jpg')
+    os.remove(data_dir+'/report_'+Subject_ID+'_1.pdf')
+    os.remove(data_dir+'/report_'+Subject_ID+'_1.jpg')
+    os.remove(data_dir+'/report_'+Subject_ID+'_2.pdf')
+    os.remove(data_dir+'/report_'+Subject_ID+'_2.jpg')
 
 def genPPT(pdf_file):
     # generate ppt from pdf
