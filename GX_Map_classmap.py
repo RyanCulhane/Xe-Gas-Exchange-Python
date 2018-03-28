@@ -284,6 +284,7 @@ class GXSubject(object):
                                   index2color = short_index2color,
                                   ind_start = ind_start,
                                   ind_inter = ind_inter,
+                                  Subject_ID = self.Subject_ID,
                                   mon_name = self.data_dir+'/ven_montage.png')
 
         bar_montage = makeMontage(bin_index = self.bar2gas_binning,
@@ -291,6 +292,7 @@ class GXSubject(object):
                                   index2color = long_index2color,
                                   ind_start = ind_start,
                                   ind_inter = ind_inter,
+                                  Subject_ID = self.Subject_ID,
                                   mon_name = self.data_dir+'/bar_montage.png')
 
         rbc_montage = makeMontage(bin_index = self.rbc2gas_binning,
@@ -298,6 +300,7 @@ class GXSubject(object):
                                   index2color = short_index2color,
                                   ind_start = ind_start,
                                   ind_inter = ind_inter,
+                                  Subject_ID = self.Subject_ID,
                                   mon_name = self.data_dir+'/rbc_montage.png')
 
         ## make histogram

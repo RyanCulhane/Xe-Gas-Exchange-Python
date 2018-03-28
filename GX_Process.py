@@ -7,20 +7,18 @@ def GX_Process(data_dir, Subject_ID):
 
     # start = time.time()
     subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
-    # subject.readFromMat()
-    subject.GXRecon()
+    subject.readFromMat()
+    # subject.GXRecon()
     subject.GXMapping()
-    subject.saveMat()
-    # endt = time.time()
-    # print(endt-start)
+    # subject.saveMat()
 
     # send out report via email
-    send_email(data_dir=subject.data_dir, Subject_ID=subject.Subject_ID)
+    # send_email(data_dir=subject.data_dir, Subject_ID=subject.Subject_ID)
 
 if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
-        data_dir = '/home/ziyiw/Patients/'+sys.argv[1]
+        data_dir = '/home/ziyi/Patients/'+sys.argv[1]
         Subject_ID = sys.argv[1]
 
     elif(len(sys.argv) == 3):

@@ -301,7 +301,29 @@ def montage(Img):
 
     return img_montage
 
-def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, mon_name):
+def save3DRGB2nii(volume,file_name):
+    # save 4D volume to a RGB nii
+    # the input should be of size a*b*c*3(RGB)
+    # There is some order difference between python and nifti that requires pre-process
+
+    color = (np.copy(volume)*255).astype('uint8') # need uint8 to save to RGB
+
+    # some fancy and tricky re-arrange
+    color = np.transpose(color,[2,3,0,1])
+    cline = np.reshape(color,(1,np.size(color)))
+    color = np.reshape(cline,np.shape(volume),order='A')
+    color = np.transpose(color,[2,1,0,3])
+
+    # stake the RGB channels
+    shape_3d = volume.shape[0:3]
+    rgb_dtype = np.dtype([('R', 'u1'), ('G', 'u1'), ('B', 'u1')])
+    nii_data = color.copy().view(dtype=rgb_dtype).reshape(shape_3d)  # copy used to force fresh internal structure
+    ni_img = nib.Nifti1Image(nii_data, np.eye(4))
+
+    nib.save(ni_img, file_name)
+
+
+def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, Subject_ID, mon_name):
     ## make montage (2*8) from binning map and ute image
     ## the montage will pick the image from ind_start
     # normalize ute
@@ -311,17 +333,18 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, mon_name)
 
     img_w,img_h,img_d = np.shape(bin_index)
 
-    num_slice = 16
-    ind_end = ind_start + ind_inter*num_slice
+    num_slice_all = np.shape(ute_reg)[0]
+    num_slice_mon = 16
+    ind_end = ind_start + ind_inter*num_slice_mon
 
-    colormap = np.zeros((img_w,img_h,num_slice,3))
-    ind_slice = 0
+    colormap = np.zeros((img_w,img_h,num_slice_all,3))
 
     def convert_index2color(ind):
         return index2color[ind]
 
     ## convert each slice from index to RGB, then combine ute_reg and bin_index_RGB to HSV
-    for k in range(ind_start, ind_end, ind_inter):
+    # for k in range(ind_start, ind_end, ind_inter):
+    for k in range(num_slice_all):
 
         ## convert bin_index to bin_rgb
         bin_rgb = map(convert_index2color, bin_index[:,:,k].flatten())
@@ -331,11 +354,16 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, mon_name)
         ## merge bin_rgb with ute_reg through hsv colorspace
         colorslice = mergeRGBandGray(ute_reg_m[:,:,k],bin_rgb)
 
-        colormap[:,:,ind_slice,:] = colorslice
-        ind_slice = ind_slice + 1
+        colormap[:,:,k,:] = colorslice
 
+    # save RGB stack to nii
+    nii_name = mon_name[:-15]+Subject_ID+'_'+mon_name[-15:-12]+'.nii'
+    save3DRGB2nii(volume=colormap,file_name=nii_name)
+
+    colormap_mon = colormap[:,:,ind_start:ind_end:ind_inter,:]
     ## make montage from the image stack
-    img_montage = montage(colormap)
+
+    img_montage = montage(colormap_mon)
 
     ## plot and save the montage
     plt.imshow(img_montage,interpolation='none')
