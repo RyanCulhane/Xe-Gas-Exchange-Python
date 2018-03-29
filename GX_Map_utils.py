@@ -357,7 +357,13 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, Subject_I
         colormap[:,:,k,:] = colorslice
 
     # save RGB stack to nii
-    nii_name = mon_name[:-15]+Subject_ID+'_'+mon_name[-15:-12]+'.nii'
+    if(mon_name[-15:] == 'ven_montage.png'):
+        nii_name = mon_name[:-15]+'ven_Sub'+Subject_ID+'.nii'
+    elif(mon_name[-15:] == 'bar_montage.png'):
+        nii_name = mon_name[:-15]+'Bar2gas_Sub'+Subject_ID+'.nii'
+    elif(mon_name[-15:] == 'rbc_montage.png'):
+        nii_name = mon_name[:-15]+'RBC2gas_Sub'+Subject_ID+'.nii'
+
     save3DRGB2nii(volume=colormap,file_name=nii_name)
 
     colormap_mon = colormap[:,:,ind_start:ind_end:ind_inter,:]

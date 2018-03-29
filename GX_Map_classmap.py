@@ -50,6 +50,7 @@ class GXSubject(object):
 
         self.spectFit()
         self.reconXe()
+        # self.readinXe()
 
         print("*********************Mask Segmentation")
         self.uteSegmentation()
@@ -129,6 +130,9 @@ class GXSubject(object):
         self.dissolved = mat_input['dissolvedVol']
         self.ute = abs(mat_input['uteVol'])
 
+        fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask*.nii')[0]
+        self.mask = np.array(nib.load(fmask).get_data())
+
     def spectFit(self):
         from GX_Spec_utils import spect_fit, print_fit
 
@@ -150,8 +154,6 @@ class GXSubject(object):
         # self.ute = np.array(nib.load(fute).get_data())
 
         self.mask = CNNpredict(ute = self.ute)
-        # fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask_grow.nii')[0]
-        # self.mask = np.array(nib.load(fmask).get_data())
 
     def alignImages(self):
 

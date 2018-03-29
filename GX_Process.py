@@ -18,7 +18,8 @@ def GX_Process(data_dir, Subject_ID):
 if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
-        data_dir = '/home/ziyi/Patients/'+sys.argv[1]
+        # data_dir = '/media/sharedrive/shared/_ziyi/Patients/'+sys.argv[1]
+        data_dir = '/home/ziyiw/Patients/'+sys.argv[1]
         Subject_ID = sys.argv[1]
 
     elif(len(sys.argv) == 3):
