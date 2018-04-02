@@ -7,7 +7,9 @@ import os
 import re
 from numpy.ctypeslib import ndpointer
 from GX_Twix_parser import readTwix
+from GX_Benchmark_utils import timerfunc
 from matplotlib import pyplot as plt
+
 
 def generate_radial_1D_traj(dwell_time, grad_delay_time, ramp_time, plat_time, decay_time, npts,oversampling):
     # generate 1d radial distance array based on the timing and the amplitude and the gradient
@@ -53,15 +55,13 @@ def generate_radial_1D_traj(dwell_time, grad_delay_time, ramp_time, plat_time, d
 
     return calcRadDist(npts)
 
+@timerfunc
 def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
 
     #wrap up c function:
     # void sparse_gridding_distance(double *coords, double kernel_width,
     # 		unsigned int npts, unsigned int ndims,
     # 		unsigned int *output_dims,
-    # 		double *nonsparse_sample_indices,
-    # 		double  *nonsparse_voxel_indices,
-    # 		double *nonsparse_distances,
     # 		unsigned int *n_nonsparse_entries,
     # 		unsigned int max_size,
     # 		int force_dim)
@@ -70,64 +70,57 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
 
     _sparse.sparse_gridding_distance.argtypes = (\
      ct.POINTER(ct.c_double),ct.c_double, ct.c_uint, ct.c_uint, ct.POINTER(ct.c_uint),\
-     ct.POINTER(ct.c_double),ct.POINTER(ct.c_double),ct.POINTER(ct.c_double),\
      ct.POINTER(ct.c_uint),ct.c_uint,ct.c_int)
 
      # construct a wrapper function for the c code function
-    def sparse_gridding(traj, kernel_para, matrix_size, force_dim):
+    # def sparse_gridding(traj, kernel_para, matrix_size, force_dim):
 
-        # global _sparse
+    npts,ndim = np.shape(traj)
+    # flatten traj to a list for input
+    traj = traj.flatten().tolist()
+    kernel_para = kernel_para
+    matrix_size = matrix_size.astype(int).flatten().tolist()
 
-        npts,ndim = np.shape(traj)
-        # flatten traj to a list for input
-        traj = traj.flatten().tolist()
-        kernel_para = kernel_para
-        matrix_size = matrix_size.astype(int).flatten().tolist()
+    num_coord = len(traj)
+    num_matrixsize = len(matrix_size)
 
-        num_coord = len(traj)
-        num_matrixsize = len(matrix_size)
+    # calculate max size of the output indices
+    max_nNeighbors = 1
+    for dim in range(0,ndim):
+        max_nNeighbors = int(max_nNeighbors*(kernel_para+1))
 
-        # calculate max size of the output indices
-        max_nNeighbors = 1
-        for dim in range(0,ndim):
-            max_nNeighbors = int(max_nNeighbors*(kernel_para+1))
+    max_size = npts*max_nNeighbors
 
-        max_size = npts*max_nNeighbors
+    # create empty output
+    nSparsePoints = [0] * 1
 
-        # create empty output
-        sample_indices = [0.0] * max_size
-        voxel_indices = [0.0] * max_size
-        distances = [0.0] * max_size
-        nSparsePoints = [0] * 1
+    # define argument types
+    coord_type = ct.c_double * num_coord
+    outputsize_type = ct.c_uint * num_matrixsize
+    # outindices_type = ct.c_double * max_size
+    n_nonsparse_entries_type = ct.c_uint * 1
 
-        # define argument types
-        coord_type = ct.c_double * num_coord
-        outputsize_type = ct.c_uint * num_matrixsize
-        outindices_type = ct.c_double * max_size
-        n_nonsparse_entries_type = ct.c_uint * 1
+    # set_result to return an array of numbers
+    _sparse.sparse_gridding_distance.restype = ndpointer(dtype=ct.c_double, shape=(max_size*3,))
 
-        # set_result to return an array of numbers
-        _sparse.sparse_gridding_distance.restype = ndpointer(dtype=ct.c_double, shape=(max_size*3,))
+    import time
+    time_start = time.time()
+    result = _sparse.sparse_gridding_distance(\
+    coord_type(*traj), ct.c_double(kernel_para), ct.c_uint(npts),\
+    ct.c_uint(ndim), outputsize_type(*matrix_size),\
+    n_nonsparse_entries_type(*nSparsePoints),\
+    ct.c_uint(max_size),ct.c_int(force_dim)
+    )
+    time_end = time.time()
+    print("the c function took "+str(time_end-time_start)+" to run")
 
-        result = _sparse.sparse_gridding_distance(\
-        coord_type(*traj), ct.c_double(kernel_para), ct.c_uint(npts),\
-        ct.c_uint(ndim), outputsize_type(*matrix_size),\
-        outindices_type(*sample_indices), outindices_type(*voxel_indices),\
-        outindices_type(*distances), \
-        n_nonsparse_entries_type(*nSparsePoints),\
-        ct.c_uint(max_size),ct.c_int(force_dim)
-        )
-
-        sample_indices = result[:max_size]
-        voxel_indices = result[max_size:2*max_size]
-        distances = result[2*max_size:3*max_size]
-
-        return sample_indices, voxel_indices, distances
-
-    sample_indices, voxel_indices, distances = sparse_gridding(traj, kernel_para, matrix_size, force_dim)
+    sample_indices = result[:max_size]
+    voxel_indices = result[max_size:2*max_size]
+    distances = result[2*max_size:3*max_size]
 
     return sample_indices, voxel_indices, distances
 
+@timerfunc
 def gen_traj_c(num_projs, traj_type):
     # generate xyz coordinates for the trajectory samples based on the number of projs and traj type
     # traj_type:
@@ -258,6 +251,7 @@ def recon(data, traj, kernel_sharpness, kernel_extent, overgrid_factor, image_si
 
     return(reconVol)
 
+@timerfunc
 def recon_ute(twix_file):
     # recon the ute file, input the path of the Siemens twix file
     ## read in data
