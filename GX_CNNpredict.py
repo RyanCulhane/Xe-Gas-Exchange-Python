@@ -26,12 +26,8 @@ def CNNpredict(ute):
 
     # a deep matrix: in 3rd dimension, the label will be set to 1
     def de_label_map(myPred):
-        myPred = np.reshape(myPred,[1,img_w,img_h,n_labels])
-        return_map = np.zeros([img_w,img_h])
-        for i in range(0,np.shape(myPred)[1]):
-            for j in range(0,np.shape(myPred)[2]):
-                return_map[i][j]=np.argmax(myPred[0,i,j,:])
-        return return_map
+        myPred = np.reshape(myPred,[img_w,img_h,n_labels])
+        return np.argmax(myPred,axis=2) # collapse the 3rd dimension
 
     autoencoder = models.Sequential()
 
