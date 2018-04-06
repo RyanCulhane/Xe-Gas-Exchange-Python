@@ -13,7 +13,6 @@ import pdb
 class GXRat(object):
     def __init__(self, data_dir, Subject_ID):
         print("*********************Initiate a new rat. Today is a beautiful day!")
-        time_start = time.time()
         self.data_dir = data_dir
         self.filename = []
         self.RBC2barrier = 0.580
@@ -66,13 +65,10 @@ class GXRat(object):
 
         self.generateStats()
 
+    def makeReport(self):
         print("*********************Clnical Report")
         self.generateFigures()
         self.generateHtmlPdf()
-
-        time_end = time.time()
-        print('*********************finished program')
-        print(time_end - time_start)
 
     def checkAlignment(self):
         # check if all the images are the same alignment
@@ -111,16 +107,24 @@ class GXRat(object):
         ## temporal usage
         # read in dissolved and gas Xe
         # fdata = self.data_dir+'/Sub'+self.Subject_ID+'_data.mat'
-        fdata = self.data_dir+'/data.mat'
+
+        fdata = self.data_dir+'/'+self.Subject_ID+'.mat'
+
+        # pdb.set_trace()
 
         mat_input = sio.loadmat(fdata)
-        self.gas_highreso = mat_input['gas_highreso']
-        self.gas_highSNR = mat_input['gas_highSNR']
-        self.dissolved = mat_input['dissolved']
-        self.ute = abs(mat_input['ute'])
-        self.mask = mat_input['mask'].astype(bool)
-        self.RBC2barrier = mat_input['RBC2barrier'].flatten()
-        self.TE90 = mat_input['TE90'].flatten()
+
+        # unwrape the dict
+        mat_input = mat_input[self.Subject_ID]
+
+        self.gas_highreso = mat_input['gas_highreso'][0,0]
+        self.gas_highSNR = mat_input['gas_highSNR'][0,0]
+        self.dissolved = mat_input['dissolved'][0,0]
+        self.ute = abs(mat_input['ute'][0,0])
+        self.mask = mat_input['mask'][0,0].astype(bool)
+        self.airways = mat_input['airways'][0,0].astype(bool)
+        self.RBC2barrier = mat_input['RBC2barrier'][0,0].flatten()
+        self.TE90 = mat_input['TE90'][0,0].flatten()
 
     def uteSegmentation(self):
         ## temporal usage
@@ -155,6 +159,9 @@ class GXRat(object):
         self.ute_reg, self.mask_reg = register(gas_highreso = abs(self.gas_highreso),
                                                ute          = self.ute,
                                                mask         = self.mask.astype(float))
+
+        # take out the airways after uteRegister
+        self.mask_reg = self.mask_reg & (~self.airways)
 
         # fmask_reg = 'BHUTE_Sub002102_FID49886_mask_grow_reg.nii'
         # self.mask_reg = np.array(nib.load(fmask_reg).get_data()).astype(bool)
@@ -197,9 +204,11 @@ class GXRat(object):
         ## binning for barrier
         # from GX_defineColormaps import thre_bar
         # from GX_Map_utils import disBinning
-        #
-        # cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
-        # cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
+
+        # T2*_gas = 2.01 ms; T2*_rbc = 0.73 ms, T2*_bar = 0.56 ms
+        # Flip angle_gas = 15, flip angle_dissolved = 20
+        cor_TE90 = np.exp(self.TE90/560.0)/np.exp(self.TE90/2010.0)
+        cor_flipoff = 100*np.sin(15.0*np.pi/180)/np.sin(20.0*np.pi/180)
         #
         # self.bar2gas, self.bar2gas_binning = disBinning(discomp       = self.barrier,
         #                                                 gas_highSNR   = abs(self.gas_highSNR),
@@ -207,15 +216,15 @@ class GXRat(object):
         #                                                 mask          = self.mask_reg_vent,
         #                                                 cor           = cor_TE90*cor_flipoff)
 
-       from GX_defineColormaps import thre_vent
-       from GX_Map_utils import gasBinning
-       bar2gas = np.zeros(np.shape(self.barrier))
-       mask = self.mask_reg_vent
-       bar2gas[mask] = np.divide(self.barrier[mask],abs(self.gas_highSNR[mask]))
-       bar2gas[bar2gas<0] = 1e-5
-       self.bar2gas = bar2gas
+        from GX_defineColormaps import thre_vent
+        from GX_Map_utils import gasBinning
+        bar2gas = np.zeros(np.shape(self.barrier))
+        mask = self.mask_reg_vent
+        bar2gas[mask] = np.divide(self.barrier[mask],abs(self.gas_highSNR[mask]))
+        bar2gas[bar2gas<0] = 1e-5
+        self.bar2gas = bar2gas*cor_TE90*cor_flipoff
 
-       _, self.bar2gas_binning,_ = gasBinning(gas_highreso  = bar2gas,
+        _, self.bar2gas_binning,_ = gasBinning(gas_highreso  = bar2gas,
                                                bin_threshold = thre_vent,
                                                mask          = self.mask_reg_vent,
                                                percentile    = 99)
@@ -224,9 +233,11 @@ class GXRat(object):
         ## binning for barrier
         # from GX_defineColormaps import thre_rbc
         # from GX_Map_utils import disBinning
-        #
-        # cor_TE90 = np.exp(self.TE90/2000.0)/np.exp(self.TE90/50000.0)
-        # cor_flipoff = 100*np.sin(0.5*np.pi/180)/np.sin(20*np.pi/180)
+
+        # T2*_gas = 2.01 ms; T2*_rbc = 0.73 ms, T2*_bar = 0.56 ms
+        # Flip angle_gas = 15, flip angle_dissolved = 20
+        cor_TE90 = np.exp(self.TE90/730.0)/np.exp(self.TE90/2010.0)
+        cor_flipoff = 100*np.sin(15.0*np.pi/180)/np.sin(20.0*np.pi/180)
         #
         # self.rbc2gas, self.rbc2gas_binning = disBinning(discomp       = self.rbc,
         #                                                 gas_highSNR   = abs(self.gas_highSNR),
@@ -239,7 +250,7 @@ class GXRat(object):
         mask = self.mask_reg_vent
         rbc2gas[mask] = np.divide(self.rbc[mask],abs(self.gas_highSNR[mask]))
         rbc2gas[rbc2gas<0] = 1e-5
-        self.rbc2gas = rbc2gas
+        self.rbc2gas = rbc2gas*cor_TE90*cor_flipoff
 
         _, self.rbc2gas_binning,_ = gasBinning(gas_highreso  = rbc2gas,
                                                 bin_threshold = thre_vent,
@@ -342,13 +353,13 @@ class GXRat(object):
 
     def saveMat(self):
 
-        sio.savemat(self.data_dir+'/'+self.Subject_ID+'.mat',vars(self))
+        sio.savemat(self.data_dir+'/'+self.Subject_ID+'_GX.mat',vars(self))
 
 
 if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
-        data_dir = '/home/ziyiw/Patients/'+sys.argv[1]
+        data_dir = '/media/sharedrive/shared/team_documents/2018_Preclinical_PAH//RawData/HEALTHY/'+sys.argv[1]
         Subject_ID = sys.argv[1]
 
     elif(len(sys.argv) == 3):

@@ -3,17 +3,14 @@ import sys
 def GX_Process(data_dir, Subject_ID):
 
     from GX_Map_classmap import GXSubject
-    from GX_email import send_email
 
     # start = time.time()
     subject = GXSubject(data_dir=data_dir, Subject_ID=Subject_ID)
-    subject.readFromMat()
-    # subject.GXRecon()
+    # subject.readFromMat()
+    subject.GXRecon()
     subject.GXMapping()
-    # subject.saveMat()
-
-    # send out report via email
-    # send_email(data_dir=subject.data_dir, Subject_ID=subject.Subject_ID)
+    subject.saveMat()
+    # subject.sendEmail()
 
 if __name__ == "__main__":
 

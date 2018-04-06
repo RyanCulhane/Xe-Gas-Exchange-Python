@@ -118,6 +118,7 @@ class GXSubject(object):
 
         dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
         self.gas_highSNR, self.gas_highreso, self.dissolved, self.TE90 = recon_dixon(dixon_file)
+        # pdb.set_trace()
 
     def readinXe(self):
         ## temporal usage
@@ -134,14 +135,12 @@ class GXSubject(object):
         self.mask = np.array(nib.load(fmask).get_data())
 
     def spectFit(self):
-        from GX_Spec_utils import spect_fit, print_fit
+        from GX_Spec_utils import spect_fit
 
         cali_file = glob.glob(self.data_dir+'/meas*Xe_fid_cali*.dat')[0]
         dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
 
-        self.RBC2barrier, self.spectfit_box = spect_fit(twix_dixon_file=dixon_file, twix_cali_file=cali_file)
-
-        print_fit(fit_box=self.spectfit_box, Subject_ID=self.Subject_ID)
+        self.RBC2barrier, self.spectfit_box = spect_fit(twix_dixon_file=dixon_file, twix_cali_file=cali_file, Subject_ID = self.Subject_ID)
 
     def uteSegmentation(self):
         ## temporal usage
@@ -330,6 +329,11 @@ class GXSubject(object):
     def saveMat(self):
 
         sio.savemat(self.data_dir+'/'+self.Subject_ID+'.mat',vars(self))
+
+    def sendEmail(self):
+        from GX_email import send_email
+
+        send_email(data_dir=self.data_dir, Subject_ID=self.Subject_ID)
 
     def readFromMat(self):
         # read in all members from a saved matlab file

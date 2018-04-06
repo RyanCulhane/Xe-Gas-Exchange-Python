@@ -12,7 +12,7 @@ body {
     float:none;
 }
 .map-container{
-    width:770px;
+    width:740px;
     padding: 0px;
     border: 0px;
     margin: 0px;
@@ -46,7 +46,7 @@ h2 {
     color:black;
 }
 .map-tile{
-    width:760px;
+    width:730px;
     color:white;
     border:0px;
     margin-left:-20px;

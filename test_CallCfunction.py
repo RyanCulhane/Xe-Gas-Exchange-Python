@@ -1,49 +1,51 @@
-import ctypes as ct
-import pdb
-import scipy.io as sio
+import pyfftw
+import scipy.signal
 import numpy as np
-from numpy.ctypeslib import ndpointer
+from timeit import Timer
+import pdb
+
+# a = pyfftw.empty_aligned((128, 64), dtype='complex128')
+# b = pyfftw.empty_aligned((128, 64), dtype='complex128')
+#
+# a[:] = numpy.random.randn(128, 64) + 1j*numpy.random.randn(128, 64)
+# b[:] = numpy.random.randn(128, 64) + 1j*numpy.random.randn(128, 64)
+#
+# t = Timer(lambda: scipy.signal.fftconvolve(a, b))
+#
+# print('Time with scipy.fftpack: %1.3f seconds' % t.timeit(number=100))
+#
+# # Monkey patch fftpack with pyfftw.interfaces.scipy_fftpack
+# scipy.fftpack = pyfftw.interfaces.scipy_fftpack
+# scipy.signal.fftconvolve(a, b) # We cheat a bit by doing the planning first
+#
+# # Turn on the cache for optimum performance
+# pyfftw.interfaces.cache.enable()
+#
+# print('Time with monkey patched scipy_fftpack: %1.3f seconds' %
+#        t.timeit(number=100))
+recont = np.load('recon_t.npy')
+reconf = np.load('recon_f.npy')
+#
+#
+# a = pyfftw.empty_aligned(np.shape(recont),dtype='complex128')
+# a[:] = recont
+# b = pyfftw.interfaces.numpy_fft.ifft(a)
+
+
+import pyfftw
 import time
-import os
 
-# fdata = 'gridding_inputoutput.mat'
-#
-# mat_input = sio.loadmat(fdata)
-#
-# input1 = mat_input['traj']
-# input2 = mat_input['input2_kernelExtent_overgridF']
-# input3 = mat_input['input3_uint32_matrixS']
-# input4 = mat_input['input4']
-# pdb.set_trace()
-#wrap up c function:
-# void sparse_gridding_distance(double *coords, double kernel_width,
-# 		unsigned int npts, unsigned int ndims,
-# 		unsigned int *output_dims,
-# 		double *nonsparse_sample_indices,
-# 		double  *nonsparse_voxel_indices,
-# 		double *nonsparse_distances,
-# 		unsigned int *n_nonsparse_entries,
-# 		unsigned int max_size,
-# 		int force_dim)
+time_start = time.time()
+a = pyfftw.empty_aligned(np.shape(recont), dtype='complex128')
+b = pyfftw.empty_aligned(np.shape(recont), dtype='complex128')
+fft_object_c = pyfftw.FFTW(a, b, axes=(0,1,2))
+recon_ff = fft_object_c(recont)/np.prod(np.shape(recont))
+time_end = time.time()
+print('FFT using FFTW: '+str(time_end-time_start))
 
-_traj = ct.CDLL(os.getcwd()+'/libtraj.so')
-_traj.gen_traj.argtypes = (ct.c_long,ct.c_long)
+time_start = time.time()
+recon_npf = np.fft.ifftn(recont)
+time_end = time.time()
+print('FFT using nump: '+str(time_end-time_start))
 
-# output 3 coordinates of the trajectory points
-num_projs = 5
-traj_type = 5
-
-output_size = 3*num_projs
-
-_traj.gen_traj.restype = ndpointer(dtype=ct.c_double, shape=(output_size,))
-
-result = _traj.gen_traj(ct.c_long(num_projs), ct.c_long(traj_type))
-
-x = result[:num_projs]
-y = result[num_projs:2*num_projs]
-z = result[2*num_projs:3*num_projs]
-
-print x
-print y
-print z
 pdb.set_trace()

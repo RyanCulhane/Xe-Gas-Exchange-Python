@@ -7,9 +7,10 @@ import os
 import re
 from numpy.ctypeslib import ndpointer
 from GX_Twix_parser import readTwix
-from GX_Benchmark_utils import timerfunc
 from matplotlib import pyplot as plt
 
+from GX_Benchmark_utils import timerfunc # decorator for timing a function
+from memory_profiler import profile # decorator to monitor memory usage
 
 def generate_radial_1D_traj(dwell_time, grad_delay_time, ramp_time, plat_time, decay_time, npts,oversampling):
     # generate 1d radial distance array based on the timing and the amplitude and the gradient
@@ -55,7 +56,7 @@ def generate_radial_1D_traj(dwell_time, grad_delay_time, ramp_time, plat_time, d
 
     return calcRadDist(npts)
 
-@timerfunc
+# @profile
 def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
 
     #wrap up c function:
@@ -72,8 +73,6 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
      ct.POINTER(ct.c_double),ct.c_double, ct.c_uint, ct.c_uint, ct.POINTER(ct.c_uint),\
      ct.POINTER(ct.c_uint),ct.c_uint,ct.c_int)
 
-     # construct a wrapper function for the c code function
-    # def sparse_gridding(traj, kernel_para, matrix_size, force_dim):
 
     npts,ndim = np.shape(traj)
     # flatten traj to a list for input
@@ -97,22 +96,17 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
     # define argument types
     coord_type = ct.c_double * num_coord
     outputsize_type = ct.c_uint * num_matrixsize
-    # outindices_type = ct.c_double * max_size
     n_nonsparse_entries_type = ct.c_uint * 1
 
     # set_result to return an array of numbers
     _sparse.sparse_gridding_distance.restype = ndpointer(dtype=ct.c_double, shape=(max_size*3,))
 
-    import time
-    time_start = time.time()
     result = _sparse.sparse_gridding_distance(\
     coord_type(*traj), ct.c_double(kernel_para), ct.c_uint(npts),\
     ct.c_uint(ndim), outputsize_type(*matrix_size),\
     n_nonsparse_entries_type(*nSparsePoints),\
     ct.c_uint(max_size),ct.c_int(force_dim)
     )
-    time_end = time.time()
-    print("the c function took "+str(time_end-time_start)+" to run")
 
     sample_indices = result[:max_size]
     voxel_indices = result[max_size:2*max_size]
@@ -120,6 +114,7 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
 
     return sample_indices, voxel_indices, distances
 
+# @profile
 @timerfunc
 def gen_traj_c(num_projs, traj_type):
     # generate xyz coordinates for the trajectory samples based on the number of projs and traj type
@@ -251,6 +246,7 @@ def recon(data, traj, kernel_sharpness, kernel_extent, overgrid_factor, image_si
 
     return(reconVol)
 
+# @profile
 @timerfunc
 def recon_ute(twix_file):
     # recon the ute file, input the path of the Siemens twix file
@@ -307,6 +303,7 @@ def recon_ute(twix_file):
 
     return(uteVol)
 
+@timerfunc
 def recon_dixon(twix_file):
     ## recon_dixon images
     ###################################################################
@@ -335,9 +332,9 @@ def recon_dixon(twix_file):
         'ramp_time': float(meas_dict['RORampTime']),
         'plat_time': 2500,
         'decay_time': 60,
-        'del_x': 24-13,
-        'del_y': 24-14,
-        'del_z': 24-9,
+        'del_x': -13,
+        'del_y': -14,
+        'del_z': -9,
     }
 
     x, y, z = generate_traj(**gen_traj_dict)
@@ -365,7 +362,7 @@ def recon_dixon(twix_file):
         'overgrid_factor': 3,
         'n_pipe_iter': 20,
         'image_size': (npts, npts, npts),
-        'verbosity': 1,
+        'verbosity': 0,
     }
     print('Starting recon gas high SNR')
     gasVol_highSNR = recon(**recon_dict_highSNR)
@@ -378,7 +375,7 @@ def recon_dixon(twix_file):
         'overgrid_factor': 3,
         'n_pipe_iter': 20,
         'image_size': (npts, npts, npts),
-        'verbosity': 1,
+        'verbosity': 0,
     }
     print('Starting recon gas high resolution')
     gasVol_highreso = recon(**recon_dict_highreso)
@@ -394,8 +391,5 @@ def recon_dixon(twix_file):
     gasVol_highreso = np.transpose(gasVol_highreso,(2,1,0))
     gasVol_highSNR = np.transpose(gasVol_highSNR,(2,1,0))
     dissolvedVol = np.transpose(dissolvedVol,(2,1,0))
-    # gasVol_highreso = complex_align(gasVol_highreso)
-    # gasVol_highSNR = complex_align(gasVol_highSNR)
-    # dissolvedVol = complex_align(dissolvedVol)
 
     return gasVol_highSNR, gasVol_highreso, dissolvedVol, TE90

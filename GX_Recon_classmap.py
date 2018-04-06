@@ -1,6 +1,7 @@
 from scipy.stats import norm
 import scipy.sparse as sps
 import numpy as np
+from GX_Benchmark_utils import timerfunc
 
 class Kernel:
 
@@ -43,6 +44,7 @@ class L2Proximity(Proximity):
         Proximity.__init__(self, kernel_obj = kernel_obj, verbosity = verbosity)
         self.unique_string = 'L2_'+self.kernel_obj.unique_string
 
+    @timerfunc
     def evaluate(self, traj, overgrid_factor, matrix_size):
         # calculate gridding in pre-overgridding distances
         # with c code compiled
@@ -153,6 +155,8 @@ class IterativeDCF:
         # reasonable first guess by summing all up
         dcf = np.divide(1,system_obj.A.dot(idea_PSFdata))
 
+        import time
+        time_start = time.time()
         # iteratively calculating dcf
         for kk in range(0, self.dcf_iterations):
             if(self.verbosity):
@@ -160,6 +164,8 @@ class IterativeDCF:
 
             dcf = np.divide(dcf,system_obj.A.dot(system_obj.ATrans.dot(dcf)))
 
+        time_end = time.time()
+        print("The runtime for iterative DCF: "+str(time_end-time_start))
         self.dcf = dcf
 
 # LSQ gridded
@@ -182,6 +188,7 @@ class LSQgridded(GriddedReconModel):
         self.dcf_obj = dcf_obj
         self.unique_string = 'grid_'+system_obj.unique_string+'_'+dcf_obj.unique_string
 
+    @timerfunc
     def grid(self, data):
         ## only for MatrixSystemModel
         if(self.dcf_obj.space == 'gridspace'):
@@ -192,6 +199,7 @@ class LSQgridded(GriddedReconModel):
             raise Exception('DCF stype not recognized')
         return(gridVol)
 
+    @timerfunc
     def reconstruct(self,data,traj):
         if(self.verbosity):
             print('Reconstructing ...')
@@ -207,9 +215,15 @@ class LSQgridded(GriddedReconModel):
         if(self.verbosity):
             print('-- Calculating IFFT ...')
 
+        import time
+        time_start = time.time()
+
         reconVol = np.fft.ifftshift(reconVol)
         reconVol = np.fft.ifftn(reconVol)
         reconVol = np.fft.ifftshift(reconVol)
+
+        time_end = time.time()
+        print("The runtime for iFFT: "+str(time_end-time_start))
 
         if(self.verbosity):
             print('-- Finished IFFT.')

@@ -33,11 +33,11 @@ else:
 
         st = os.stat(path)
 
-        # folders that are created or modiftied today
-        if(current_day == dt.date.fromtimestamp(st.st_mtime)):
+        # folders that are created or modiftied within 3 days
+        if((current_day - dt.date.fromtimestamp(st.st_mtime)) < dt.timedelta(3)):
 
             list_cali = glob.glob(path+'/meas*Xe_fid_cali*.dat')
-            list_ute = glob.glob(path+'/meas*1H_BHUTE_Radial*.dat')
+            list_ute = glob.glob(path+'/meas*BHUTE_Radial*.dat')
             list_dixon = glob.glob(path+'/meas*Xe_Radial_Dixon*.dat')
 
             # if all three files exit
@@ -51,7 +51,7 @@ else:
                     print('new scan completed: '+subject_name)
                     key = 1
 
-                    subject_path = local_subjects+'/'+subject_name
+                    subject_path = local+'/'+subject_name
 
                     os.makedirs(subject_path)
 
@@ -62,9 +62,35 @@ else:
 
                     # lauch the process program
                     from GX_Process import GX_Process
-                    GX_Process(data_dir=local, Subject_ID=subject_name)
+                    GX_Process(data_dir=local+'/'+subject_name, Subject_ID=subject_name)
                     # finish the process program
                     print('Process finished, complete time: '+ dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+                # in case we ran a second Dixon
+                if(len(list_dixon) > 1):
+
+                    subject_name = path[-7:-4] + path[-3:] +'_highBW'
+
+                    if (subject_name not in local_subjects):
+
+                        print('A second new scan completed: '+subject_name)
+                        key = 1
+
+                        subject_path = local+'/'+subject_name
+
+                        os.makedirs(subject_path)
+
+                        # copy files to local
+                        copy2(list_cali[0],subject_path)
+                        copy2(list_dixon[1],subject_path)
+                        copy2(list_ute[-1],subject_path)
+
+                        # lauch the process program
+                        from GX_Process import GX_Process
+                        GX_Process(data_dir=local+'/'+subject_name, Subject_ID=subject_name)
+                        # finish the process program
+                        print('Process finished, complete time: '+ dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
 
     if(key==0):
         print('No new subject found, check time: '+ dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

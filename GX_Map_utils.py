@@ -241,7 +241,7 @@ def biasFieldCor(image, mask):
     nib.save(nii_mask, pathMask)
 
     # cmd = pathN4+' -d 3 -i '+pathInput+' -s 2 -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
-    cmd = pathN4+' -d 3 -i '+pathInput+' -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
+    cmd = pathN4+' -d 3 -i '+pathInput+' -s 2 -x '+pathMask+' -o ['+pathOutput+', '+pathBiasField+']'
 
     os.system(cmd)
 
@@ -306,6 +306,10 @@ def save3DRGB2nii(volume,file_name):
     # the input should be of size a*b*c*3(RGB)
     # There is some order difference between python and nifti that requires pre-process
 
+    # nibabel: 2.2.1
+    # numpy: 1.14
+    # seems only work for 3D volume a * a * a
+
     color = (np.copy(volume)*255).astype('uint8') # need uint8 to save to RGB
 
     # some fancy and tricky re-arrange
@@ -321,6 +325,7 @@ def save3DRGB2nii(volume,file_name):
     ni_img = nib.Nifti1Image(nii_data, np.eye(4))
 
     nib.save(ni_img, file_name)
+    # pdb.set_trace()
 
 
 def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, Subject_ID, mon_name):
@@ -374,7 +379,8 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, Subject_I
     ## plot and save the montage
     plt.imshow(img_montage,interpolation='none')
     plt.axis('off')
-    plt.savefig(mon_name,transparent = True,bbox_inches='tight',pad_inches=-0.1)
+    # import pdb; pdb.set_trace()
+    plt.savefig(mon_name,transparent = True,bbox_inches='tight',pad_inches=-0.05)
 
     return img_montage
 

@@ -3,11 +3,29 @@ from GX_Twix_parser import readTwix
 from scipy.stats import norm
 import scipy.sparse as sps
 import numpy as np
-import os
+import os, pdb
 from GX_Recon_utils import read_twix_hdr
 from GX_Spec_classmap import NMR_TimeFit
 
-def spect_fit(twix_cali_file, twix_dixon_file):
+def print_fit(fit_box,Subject_ID, key):
+    if(key==1):
+        print "**********//Fitting Results -- Calibration//******************"
+    else:
+        print "*********//Fitting Results -- Dixon Spectrum//****************"
+
+    print "{:<8}{:<10}{:<10}{:<10}".format(Subject_ID, 'RBC','Barrier','Gas')
+
+    for k in ['Freq','FwhmL','FwhmG','Phase']:
+        v = fit_box[k]
+        print "{:<8}{:<10}{:<10}{:<10}".format(k, round(v[0],2),round(v[1],2),round(v[2],2))
+
+    v = fit_box['Area']
+    print("{:<8}{:<10.2E}{:<10.2E}{:<10.2E}".format('Area',v[0],v[1],v[2]))
+    print("**************************************************************")
+    print("******RBC:barrier = "+str(fit_box['Area'][0]/fit_box['Area'][1]))
+    print "**************************************************************"
+
+def spect_fit(twix_cali_file, twix_dixon_file, Subject_ID):
     ## spectroscopic fitting on calibration file and dixon bonus spectrum
     ## ************************************************part 1, fit on calibration
 
@@ -38,10 +56,15 @@ def spect_fit(twix_cali_file, twix_dixon_file):
 
     disfit = NMR_TimeFit(time_signal=data_dis_ave, t=t, area=[1,1,1],freq=[0,-700,-7400],
                          fwhmL=[250,200,30],fwhmG=[0,200,0],phase=[0,0,0],line_boardening=0,zeropad_size=np.size(t),method='voigt')
-    disfit.fit_time_signal()
 
-    print("**************************************************************")
-    print("Calibration RBC:barrier = "+str(disfit.area[0]/disfit.area[1]))
+    lb = np.stack(([-np.inf,-np.inf,-np.inf],[-100,-900,-np.inf],[-np.inf,-np.inf,-np.inf],[-np.inf,-np.inf,-np.inf],[-np.inf,-np.inf,-np.inf])).flatten()
+    ub = np.stack(([+np.inf,+np.inf,+np.inf],[+100,-500,+np.inf],[+np.inf,+np.inf,+np.inf],[+np.inf,+np.inf,+np.inf],[+np.inf,+np.inf,+np.inf])).flatten()
+    bounds = (lb,ub)
+
+
+
+    disfit.fit_time_signal(bounds)
+    # pdb.set_trace()
 
     ## ************************************************part 2, fit on dixon bonus
     scans, evps = readTwix(twix_dixon_file)
@@ -64,6 +87,11 @@ def spect_fit(twix_cali_file, twix_dixon_file):
     fwhmG = disfit.fwhmG
     phase = dixonfit.phase
 
+    fwhmL[fwhmL<0] = 0
+    # pdb.set_trace()
+    assert np.prod(fwhmL>0), "There is a negative value in Dissolved fitting fwhmL"
+    # assert np.prod(fwhmG>0), "There is a negative value in Dissolved fitting fwhmG"
+
     # set up bounds to constrain frequency and fwhm change
     lb = np.stack((0.33*area,freq-1.0,0.9*fwhmL,0.9*fwhmG-1.0,[-np.inf,-np.inf,-np.inf])).flatten()
     ub = np.stack((3.00*area,freq+1.0,1.1*fwhmL,1.1*fwhmG+1.0,[+np.inf,+np.inf,+np.inf])).flatten()
@@ -77,6 +105,15 @@ def spect_fit(twix_cali_file, twix_dixon_file):
 
     dixonfit.fit_time_signal(bounds)
 
+    fit_box_cali = {
+        'Area': disfit.area,
+        'Freq': disfit.freq,
+        'FwhmL': disfit.fwhmL,
+        'FwhmG': disfit.fwhmG,
+        'Phase': disfit.phase,
+    }
+    print_fit(fit_box = fit_box_cali, Subject_ID = Subject_ID, key = 1)
+
     fit_box = {
         'Area': dixonfit.area,
         'Freq': dixonfit.freq,
@@ -84,22 +121,9 @@ def spect_fit(twix_cali_file, twix_dixon_file):
         'FwhmG': dixonfit.fwhmG,
         'Phase': dixonfit.phase,
     }
+    print_fit(fit_box = fit_box, Subject_ID = Subject_ID, key =2)
 
+    # pdb.set_trace()
     RBC2barrier =  dixonfit.area[0]/dixonfit.area[1]
 
     return RBC2barrier, fit_box
-
-def print_fit(fit_box,Subject_ID):
-
-    print "*********************//Fitting Results//**********************"
-    print "{:<8}{:<10}{:<10}{:<10}".format(Subject_ID, 'RBC','Barrier','Gas')
-
-    for k in ['Freq','FwhmL','FwhmG','Phase']:
-        v = fit_box[k]
-        print "{:<8}{:<10}{:<10}{:<10}".format(k, round(v[0],2),round(v[1],2),round(v[2],2))
-
-    v = fit_box['Area']
-    print("{:<8}{:<10.2E}{:<10.2E}{:<10.2E}".format('Area',v[0],v[1],v[2]))
-    print("**************************************************************")
-    print("******RBC:barrier = "+str(fit_box['Area'][0]/fit_box['Area'][1]))
-    print "**************************************************************"
