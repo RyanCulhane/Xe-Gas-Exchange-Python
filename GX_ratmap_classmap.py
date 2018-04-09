@@ -51,7 +51,6 @@ class GXRat(object):
         # self.uteSegmentation()
         self.alignImages()
         # self.checkAlignment()
-        # pdb.set_trace()
         self.uteRegister()
 
         print("*********************Gas BiasFied Correction, Binning and Ventilation Mask")
@@ -151,6 +150,7 @@ class GXRat(object):
         self.gas_highreso = alignrot(self.gas_highreso)
         self.gas_highSNR = alignrot(self.gas_highSNR)
         self.dissolved = alignrot(self.dissolved)
+        self.airways = alignrot(self.airways)
 
     def uteRegister(self):
         ## temporal usage
