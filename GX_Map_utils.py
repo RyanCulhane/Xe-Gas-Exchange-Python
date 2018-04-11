@@ -10,6 +10,7 @@ from scipy.ndimage.morphology import binary_dilation
 import pdfkit
 
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import rc, xlim, ylim
 
 import pdb
 
@@ -381,13 +382,14 @@ def makeMontage(bin_index, ute_reg, index2color, ind_start, ind_inter, Subject_I
     plt.axis('off')
     # import pdb; pdb.set_trace()
     plt.savefig(mon_name,transparent = True,bbox_inches='tight',pad_inches=-0.05)
+    plt.clf()
 
     return img_montage
 
-def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
+def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name, xticks, yticks):
     ## plot histogram for the gas exchange ratio maps
     # make a thick frame
-    from matplotlib.pyplot import rc, xlim, ylim
+
     # pdb.set_trace()
     rc('axes', linewidth=4)
 
@@ -417,18 +419,17 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     plt.locator_params(axis='x', nbins=4, nticks=4)
 
     # barrier/RBC add a tick on the end
-    from GX_defineColormaps import histogram_ticks
-    if('bar_hist.png' in hist_name):
-        xticks = histogram_ticks['bar_xticks']
-        yticks = histogram_ticks['bar_yticks']
-
-    if('rbc_hist.png' in hist_name):
-        xticks = histogram_ticks['rbc_xticks']
-        yticks = histogram_ticks['rbc_yticks']
-
-    if('ven_hist.png' in hist_name):
-        xticks = histogram_ticks['ven_xticks']
-        yticks = histogram_ticks['ven_yticks']
+    # if('bar_hist.png' in hist_name):
+    #     xticks = histogram_ticks['bar_xticks']
+    #     yticks = histogram_ticks['bar_yticks']
+    #
+    # if('rbc_hist.png' in hist_name):
+    #     xticks = histogram_ticks['rbc_xticks']
+    #     yticks = histogram_ticks['rbc_yticks']
+    #
+    # if('ven_hist.png' in hist_name):
+    #     xticks = histogram_ticks['ven_xticks']
+    #     yticks = histogram_ticks['ven_yticks']
 
     # plt.locator_params(axis='y', nbins=4, nticks=4)
     xticklabels = ['{:.1f}'.format(x) for x in xticks]
@@ -442,6 +443,7 @@ def makeHistogram(data, color, x_lim, y_lim, num_bins, refer_fit, hist_name):
     fig.tight_layout()
     # pdb.set_trace()
     plt.savefig(hist_name)
+    plt.clf()
 
 def fSNR_3T(image,mask):
 

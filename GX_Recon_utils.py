@@ -332,9 +332,9 @@ def recon_dixon(twix_file):
         'ramp_time': float(meas_dict['RORampTime']),
         'plat_time': 2500,
         'decay_time': 60,
-        'del_x': -13,
-        'del_y': -14,
-        'del_z': -9,
+        'del_x': 24-13,
+        'del_y': 24-14,
+        'del_z': 24-9,
     }
 
     x, y, z = generate_traj(**gen_traj_dict)
