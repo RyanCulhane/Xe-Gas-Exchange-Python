@@ -61,12 +61,14 @@ short_index2color = {
     }
 
 ## parameters for histograms
-rbchistogram = {
-        'color': (247.0/255,96.0/255,111.0/255),
-        'x_lim': 1.2,
-        'y_lim': 0.1,
+venhistogram = {
+        'color': (0.4196,0.6824,0.8392),
+        'x_lim': 1.0,
+        'y_lim': 0.07,
         'num_bins': 50,
-        'refer_fit': (0.06106, 0.2604, 0.1481)
+        'refer_fit': (0.04074, 0.494, 0.278),
+        'xticks': [0.0, 0.5, 1.0],
+        'yticks': [0.02, 0.04, 0.06],
 }
 
 barhistogram = {
@@ -74,28 +76,103 @@ barhistogram = {
         'x_lim': 2.5,
         'y_lim': 0.18,
         'num_bins': 70,
-        'refer_fit': (0.07006, 0.4632, 0.1953)
+        'refer_fit': (0.07006, 0.4632, 0.1953),
+        'xticks': [0.0, 1.0, 2.0, 2.5],
+        'yticks': [0.05, 0.10, 0.15],
 }
 
-venhistogram = {
+rbchistogram = {
+        'color': (247.0/255,96.0/255,111.0/255),
+        'x_lim': 1.2,
+        'y_lim': 0.1,
+        'num_bins': 50,
+        'refer_fit': (0.06106, 0.2604, 0.1481),
+        'xticks': [0.0, 0.5, 1.0, 1.2],
+        'yticks': [0.05, 0.10],
+}
+## average and std for the reference cohort of the statics
+# histogram_ticks = {
+#         'ven_xticks': [0.0, 0.5, 1.0],
+#         'ven_yticks': [0.02, 0.04, 0.06],
+#         'bar_xticks': [0.0, 1.0, 2.0, 2.5],
+#         'bar_yticks': [0.05, 0.10, 0.15],
+#         'rbc_xticks': [0.0, 0.5, 1.0, 1.2],
+#         'rbc_yticks': [0.05, 0.10],
+# }
+
+referece_stats = {
+        'r_ven_defect_ave': '1',
+        'r_ven_defect_std':'<1',
+        'r_ven_low_ave':'15',
+        'r_ven_low_std':'6',
+        'r_ven_high_ave':'17',
+        'r_ven_high_std':'10',
+
+        'r_bar_defect_ave':'<1',
+        'r_bar_defect_std':'<1',
+        'r_bar_low_ave':'9',
+        'r_bar_low_std':'8',
+        'r_bar_high_ave':'1',
+        'r_bar_high_std':'4',
+
+        'r_rbc_defect_ave':'5',
+        'r_rbc_defect_std':'3',
+        'r_rbc_low_ave':'21',
+        'r_rbc_low_std':'6',
+        'r_rbc_high_ave':'7',
+        'r_rbc_high_std':'5',
+
+        'r_RBC2barrier_ave':'0.53',
+        'r_RBC2barrier_std':'0.18'
+}
+################################################################################
+## parameters for rat mapping
+mean_vent_rat = 0.6026
+std_vent_rat = 0.1895
+thre_vent_rat = [mean_vent_rat-2*std_vent_rat, mean_vent_rat-std_vent_rat, mean_vent_rat,
+             mean_vent_rat+std_vent_rat, mean_vent_rat+1.5*std_vent_rat]
+
+mean_bar_rat =  33.3981
+std_bar_rat = 24.8021
+thre_bar_rat = [mean_bar_rat-std_bar_rat, mean_bar_rat-0.5*std_bar_rat, mean_bar_rat, mean_bar_rat+0.5*std_bar_rat,
+            mean_bar_rat+1.0*std_bar_rat, mean_bar_rat+1.5*std_bar_rat, mean_bar_rat+2.0*std_bar_rat]
+
+mean_rbc_rat = 14.7685
+std_rbc_rat = 14.2638
+thre_rbc_rat = [mean_rbc_rat-2.0/3.0*std_rbc_rat, mean_rbc_rat-1.0/3.0*std_rbc_rat, mean_rbc_rat,
+            mean_rbc_rat+std_rbc_rat, mean_rbc_rat+2.0*std_rbc_rat]
+
+rbchistogram_rat = {
+        'color': (247.0/255,96.0/255,111.0/255),
+        'x_lim': 75.0,
+        'y_lim': 0.1,
+        'num_bins': 100,
+        'refer_fit': (0.04, mean_rbc_rat, std_rbc_rat),
+        'xticks': [0, 25, 50, 75],
+        'yticks': [0.05, 0.10],
+}
+
+barhistogram_rat = {
+        'color': (0.4,0.7608,0.6471),
+        'x_lim': 150.0,
+        'y_lim': 0.18,
+        'num_bins': 100,
+        'refer_fit': (0.05, mean_bar_rat, std_rbc_rat),
+        'xticks': [0, 50, 100,150],
+        'yticks': [0.05, 0.10, 0.15],
+}
+
+venhistogram_rat = {
         'color': (0.4196,0.6824,0.8392),
         'x_lim': 1.0,
         'y_lim': 0.07,
-        'num_bins': 50,
-        'refer_fit': (0.04074, 0.494, 0.278)
-}
-## average and std for the reference cohort of the statics
-
-histogram_ticks = {
-        'ven_xticks': [0.0, 0.5, 1.0],
-        'ven_yticks': [0.02, 0.04, 0.06],
-        'bar_xticks': [0.0, 1.0, 2.0, 2.5],
-        'bar_yticks': [0.05, 0.10, 0.15],
-        'rbc_xticks': [0.0, 0.5, 1.0, 1.2],
-        'rbc_yticks': [0.05, 0.10],
+        'num_bins': 100,
+        'refer_fit': (0.03, mean_vent_rat, std_vent_rat),
+        'xticks': [0.0, 0.5, 1.0],
+        'yticks': [0.02, 0.04, 0.06],
 }
 
-referece_stats = {
+referece_stats_rat = {
         'r_ven_defect_ave': '1',
         'r_ven_defect_std':'<1',
         'r_ven_low_ave':'15',

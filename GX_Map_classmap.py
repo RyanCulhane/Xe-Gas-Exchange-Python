@@ -320,11 +320,13 @@ class GXSubject(object):
     def generateHtmlPdfPPT(self):
 
         from GX_Map_utils import genHtmlPdf
+        from GX_defineColormaps import referece_stats
 
         genHtmlPdf(Subject_ID = self.Subject_ID,
                    data_dir = self.data_dir,
                    RBC2barrier = self.RBC2barrier,
-                   stats_box = self.stats_box)
+                   stats_box = self.stats_box,
+                   referece_stats = referece_stats)
 
     def saveMat(self):
 
