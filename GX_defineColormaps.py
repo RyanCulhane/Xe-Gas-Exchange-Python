@@ -197,3 +197,49 @@ referece_stats_rat = {
         'r_RBC2barrier_ave':'0.53',
         'r_RBC2barrier_std':'0.18'
 }
+################################################################################
+## parameters for rat mapping
+mean_vent_rat = 0.6026
+std_vent_rat = 0.1895
+thre_vent_rat = [mean_vent_rat-2*std_vent_rat, mean_vent_rat-std_vent_rat, mean_vent_rat,
+             mean_vent_rat+std_vent_rat, mean_vent_rat+1.5*std_vent_rat]
+
+mean_bar_rat =  33.3981
+std_bar_rat = 24.8021
+thre_bar_rat = [mean_bar_rat-std_bar_rat, mean_bar_rat-0.5*std_bar_rat, mean_bar_rat, mean_bar_rat+0.5*std_bar_rat,
+            mean_bar_rat+1.0*std_bar_rat, mean_bar_rat+1.5*std_bar_rat, mean_bar_rat+2.0*std_bar_rat]
+
+mean_rbc_rat = 14.7685
+std_rbc_rat = 14.2638
+thre_rbc_rat = [mean_rbc_rat-2.0/3.0*std_rbc_rat, mean_rbc_rat-1.0/3.0*std_rbc_rat, mean_rbc_rat,
+            mean_rbc_rat+std_rbc_rat, mean_rbc_rat+2.0*std_rbc_rat]
+
+rbchistogram_rat = {
+        'color': (247.0/255,96.0/255,111.0/255),
+        'x_lim': 75.0,
+        'y_lim': 0.1,
+        'num_bins': 100,
+        'refer_fit': (0.04, mean_rbc_rat, std_rbc_rat),
+        'xticks': [0, 25, 50, 75],
+        'yticks': [0.05, 0.10],
+}
+
+barhistogram_rat = {
+        'color': (0.4,0.7608,0.6471),
+        'x_lim': 150.0,
+        'y_lim': 0.18,
+        'num_bins': 100,
+        'refer_fit': (0.05, mean_bar_rat, std_rbc_rat),
+        'xticks': [0, 50, 100,150],
+        'yticks': [0.05, 0.10, 0.15],
+}
+
+venhistogram_rat = {
+        'color': (0.4196,0.6824,0.8392),
+        'x_lim': 1.0,
+        'y_lim': 0.07,
+        'num_bins': 100,
+        'refer_fit': (0.03, mean_vent_rat, std_vent_rat),
+        'xticks': [0.0, 0.5, 1.0],
+        'yticks': [0.02, 0.04, 0.06],
+}
