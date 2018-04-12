@@ -117,7 +117,7 @@ class GXSubject(object):
         self.ute = abs(recon_ute(ute_file))
 
         dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]
-        self.gas_highSNR, self.gas_highreso, self.dissolved, self.TE90 = recon_dixon(dixon_file)
+        self.gas_highSNR, self.gas_highreso, self.dissolved, self.TE90 = recon_dixon(twix_file=dixon_file)
         # pdb.set_trace()
 
     def readinXe(self):

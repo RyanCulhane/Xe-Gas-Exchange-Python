@@ -172,31 +172,6 @@ venhistogram_rat = {
         'yticks': [0.02, 0.04, 0.06],
 }
 
-referece_stats_rat = {
-        'r_ven_defect_ave': '1',
-        'r_ven_defect_std':'<1',
-        'r_ven_low_ave':'15',
-        'r_ven_low_std':'6',
-        'r_ven_high_ave':'17',
-        'r_ven_high_std':'10',
-
-        'r_bar_defect_ave':'<1',
-        'r_bar_defect_std':'<1',
-        'r_bar_low_ave':'9',
-        'r_bar_low_std':'8',
-        'r_bar_high_ave':'1',
-        'r_bar_high_std':'4',
-
-        'r_rbc_defect_ave':'5',
-        'r_rbc_defect_std':'3',
-        'r_rbc_low_ave':'21',
-        'r_rbc_low_std':'6',
-        'r_rbc_high_ave':'7',
-        'r_rbc_high_std':'5',
-
-        'r_RBC2barrier_ave':'0.53',
-        'r_RBC2barrier_std':'0.18'
-}
 ################################################################################
 ## parameters for rat mapping
 mean_vent_rat = 0.6026
@@ -242,4 +217,31 @@ venhistogram_rat = {
         'refer_fit': (0.03, mean_vent_rat, std_vent_rat),
         'xticks': [0.0, 0.5, 1.0],
         'yticks': [0.02, 0.04, 0.06],
+}
+
+
+referece_stats_rat = {
+        'r_ven_defect_ave': '7',
+        'r_ven_defect_std':'3',
+        'r_ven_low_ave':'13',
+        'r_ven_low_std':'2',
+        'r_ven_high_ave':'14',
+        'r_ven_high_std':'5',
+
+        'r_bar_defect_ave':'15',
+        'r_bar_defect_std':'4',
+        'r_bar_low_ave':'17',
+        'r_bar_low_std':'8',
+        'r_bar_high_ave':'5',
+        'r_bar_high_std':'4',
+
+        'r_rbc_defect_ave':'25',
+        'r_rbc_defect_std':'7',
+        'r_rbc_low_ave':'16',
+        'r_rbc_low_std':'4',
+        'r_rbc_high_ave':'10',
+        'r_rbc_high_std':'6',
+
+        'r_RBC2barrier_ave':'0.48',
+        'r_RBC2barrier_std':'0.03'
 }

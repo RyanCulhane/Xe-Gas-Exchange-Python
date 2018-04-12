@@ -32,7 +32,7 @@ def spect_fit(twix_cali_file, twix_dixon_file, Subject_ID):
     scans, evps = readTwix(twix_cali_file)
 
     data = np.asarray([x.data for x in scans])
-    meas_dict = read_twix_hdr(evps[2][1])
+    meas_dict,_ = read_twix_hdr(evps[2][1])
 
     nFids = np.shape(data)[0]
     nPts = np.shape(data)[1]
@@ -70,7 +70,7 @@ def spect_fit(twix_cali_file, twix_dixon_file, Subject_ID):
     scans, evps = readTwix(twix_dixon_file)
     data_dixon = np.asarray(scans[-1].data)
 
-    meas_dict = read_twix_hdr(evps[2][1])
+    meas_dict,_ = read_twix_hdr(evps[2][1])
     nPts = np.size(data_dixon)
     dwell_time = float(meas_dict['alDwellTime'].split()[0])*1e-9 # unit in second
     t = np.array(range(0,nPts))*dwell_time

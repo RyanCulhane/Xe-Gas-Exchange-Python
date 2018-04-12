@@ -153,6 +153,13 @@ def read_twix_hdr(bufferr):
     # just take xprot and forget about ascconv
     if(len(split_list) == 1):
         xprot = split_list[0]
+        ascconv = []
+
+        # in the case where there is only ascconv
+        if('### ASCCONV BEGIN' in xprot[:30]):
+            ascconv = xprot
+            xprot = []
+
     elif(len(split_list)==2):
         # ascconv is not parsed at this moment
         ascconv = split_list[0]
@@ -160,28 +167,43 @@ def read_twix_hdr(bufferr):
     else:
         raise Exception('Twix file has multiple Ascconv')
 
+    # parse ascconv
+    ascconv_dict = {}
+    if len(ascconv):
+
+        ascconv = ascconv[22:] # skip the head: "### Ascconv***"
+        p = re.compile('[^=]*=[^=]*\n')
+        token_list = p.findall(ascconv)
+
+        for token in token_list:
+
+            name = token.split('=')[0].strip()
+            value = token.split('=')[1].strip()
+
+            ascconv_dict[name]=value
+
     # parse xprot
-    p = re.compile('<Param(?:Bool|Long|String)\."(\w+)">\s*{([^}]*)')
-    token_list = p.findall(xprot)
-
-    p = re.compile('<ParamDouble\."(\w+)">\s*{\s*(<Precision>\s*[0-9]*)?\s*([^}]*)')
-    token_list = token_list + p.findall(xprot)
-
-    # parse into name + value and return
     twix_dict = {}
 
-    for token in token_list:
-        name = token[0]
+    if len(xprot):
+        p = re.compile('<Param(?:Bool|Long|String)\."(\w+)">\s*{([^}]*)')
+        token_list = p.findall(xprot)
 
-        p = re.compile('("*)|( *<\w*> *[^\n]*)')
-        value = p.sub(token[-1],'').strip()
+        p = re.compile('<ParamDouble\."(\w+)">\s*{\s*(<Precision>\s*[0-9]*)?\s*([^}]*)')
+        token_list = token_list + p.findall(xprot)
 
-        p = re.compile('\s*')
-        value = p.sub(value,' ')
+        for token in token_list:
+            name = token[0]
 
-        twix_dict[name] = value
+            p = re.compile('("*)|( *<\w*> *[^\n]*)')
+            value = p.sub(token[-1],'').strip()
 
-    return(twix_dict)
+            p = re.compile('\s*')
+            value = p.sub(value,' ')
+
+            twix_dict[name] = value
+
+    return twix_dict, ascconv_dict
 
 def generate_traj(dwell_time,ramp_time, plat_time, decay_time, npts, oversampling, del_x, del_y, del_z, nFrames, traj_type):
     # Generate and vectorize traj and data
@@ -256,7 +278,7 @@ def recon_ute(twix_file):
     data = np.asarray([x.data for x in scans])
 
     # parse hdr "MEAS" for more information
-    meas_dict = read_twix_hdr(evps[2][1])
+    meas_dict,_ = read_twix_hdr(evps[2][1])
 
     npts = np.shape(data)[1]
     nFrames = np.shape(data)[0]
@@ -317,8 +339,17 @@ def recon_dixon(twix_file):
     data_gas = data_dixon[2::2,:] # the first gas is contaminated, so we throw it away
 
     # parse hdr "MEAS" for more information
-    meas_dict = read_twix_hdr(evps[2][1])
+    meas_dict,_ = read_twix_hdr(evps[2][1])
+    _,measYaps_dict = read_twix_hdr(evps[3][1]) # to read out user-set values
 
+    # reading out gradient delay
+    try:
+        gradient_delay = int(measYaps_dict['sWiPMemBlock.adFree[3]'])
+    except:
+        # if the field was not used, set it to 0
+        gradient_delay = 0
+
+    pdb.set_trace()
     npts = np.shape(data_dixon)[1]
     nFrames = np.shape(data_dixon)[0]+2 # the last 2 are spectrums
     TE90 = float(meas_dict['alTE'].split()[0])
@@ -332,9 +363,9 @@ def recon_dixon(twix_file):
         'ramp_time': float(meas_dict['RORampTime']),
         'plat_time': 2500,
         'decay_time': 60,
-        'del_x': 24-13,
-        'del_y': 24-14,
-        'del_z': 24-9,
+        'del_x': gradient_delay-13,
+        'del_y': gradient_delay-14,
+        'del_z': gradient_delay4-9,
     }
 
     x, y, z = generate_traj(**gen_traj_dict)
