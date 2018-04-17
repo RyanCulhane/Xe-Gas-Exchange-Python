@@ -1,4 +1,4 @@
-import time
+import time, sys, os
 
 # a decorator to print out function execution time
 def timerfunc(func):
@@ -18,3 +18,11 @@ def timerfunc(func):
                          time=runtime))
         return value
     return function_timer
+
+# Disable print
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
+
+# Restore
+def enablePrint():
+    sys.stdout = sys.__stdout__

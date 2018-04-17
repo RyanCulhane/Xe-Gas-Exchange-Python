@@ -12,6 +12,8 @@
 *.h5
 *.zip
 *.m
+*.csv
+#.dat
 /Twix
 /html
 /__MACOSX

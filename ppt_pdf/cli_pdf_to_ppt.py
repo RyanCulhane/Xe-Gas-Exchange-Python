@@ -4,7 +4,7 @@ import PythonMagick
 from pptx import Presentation
 from pptx.util import Inches
 from pyPdf import PdfFileWriter, PdfFileReader
-from logger import Logger
+# from logger import Logger
 import pdb
 
 class PdfToPpt(object):
@@ -12,11 +12,11 @@ class PdfToPpt(object):
         self.pdf_file = pdf_file
         self.ppt_file = pdf_file.replace('.pdf', '.pptx')
 	self.total_pages = 1
-        self.log = Logger.defaults('PdfToPptx')
-        self.log.debug('%s \n %s' % (self.pdf_file, self.ppt_file))
+        # self.log = Logger.defaults('PdfToPptx')
+        # self.log.debug('%s \n %s' % (self.pdf_file, self.ppt_file))
 
     def check_file_exist(self, file_path):
-        self.log.info('Checking file - %s ' % file_path)
+        # self.log.info('Checking file - %s ' % file_path)
         if os.path.isfile(file_path):
             return True
         else:
@@ -24,7 +24,7 @@ class PdfToPpt(object):
 
     def pdf_to_image(self, pdf_file):
         if not self.check_file_exist(pdf_file):
-            self.log.debug('Requested file not found in %s ' % pdf_file)
+            # self.log.debug('Requested file not found in %s ' % pdf_file)
             return False
         image_file = pdf_file.replace('.pdf', '.jpg')
         try:
@@ -32,15 +32,15 @@ class PdfToPpt(object):
             pdf_to_img.density('200')
             pdf_to_img.read(pdf_file)
             pdf_to_img.write(image_file)
-            self.log.info('Image convert passed - %s ' % image_file)
+            # self.log.info('Image convert passed - %s ' % image_file)
             return True
         except Exception:
-            self.log.debug('Image convert failed - %s ' % image_file)
-            self.log.error('', exc_info=True)
+            # self.log.debug('Image convert failed - %s ' % image_file)
+            # self.log.error('', exc_info=True)
             return False
 
     def pdf_splitter(self):
-        self.log.info('Called pdf_splitter')
+        # self.log.info('Called pdf_splitter')
         input_pdf = PdfFileReader(file(self.pdf_file, 'rb'))
         self.total_pages = input_pdf.numPages
 
@@ -58,14 +58,14 @@ class PdfToPpt(object):
             self.pdf_to_image(new_pdf)
 
     def create_ppt(self):
-        self.log.info('Called create_ppt')
+        # self.log.info('Called create_ppt')
         prs = Presentation()
         prs.slide_height = Inches(9)
         prs.slide_width = Inches(16)
         try:
             for slide_number in range(self.total_pages):
                 img_path = self.pdf_file.replace('.pdf', '_%s%s' % (str(slide_number+1), '.jpg'))
-                self.log.debug('%s' % img_path)
+                # self.log.debug('%s' % img_path)
                 new_slide = prs.slide_layouts[0]
                 slide = prs.slides.add_slide(new_slide)
                 subtitle = slide.placeholders[1]
@@ -77,13 +77,14 @@ class PdfToPpt(object):
                 pic = slide.shapes.add_picture(img_path, left, top, height=height)
                 prs.save(self.ppt_file)
         except IOError:
-            self.log.error('error creating ppt', exc_info=True)
+            pass
+            # self.log.error('error creating ppt', exc_info=True)
 
     def execute(self):
-        self.log.info('Calling the main execution for ppt conversion')
+        # self.log.info('Calling the main execution for ppt conversion')
         self.pdf_splitter()
         self.create_ppt()
-        self.log.info('Done ppt conversion')
+        # self.log.info('Done ppt conversion')
 
 
 if __name__ == '__main__':

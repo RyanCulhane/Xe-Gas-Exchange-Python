@@ -6,7 +6,7 @@ import nibabel as nib
 import warnings
 import math, pdb, os
 import time
-from GX_Map_utils import fullMontage
+# from GX_Map_utils import fullMontage
 from scipy import io
 
 #### input

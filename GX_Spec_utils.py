@@ -87,10 +87,11 @@ def spect_fit(twix_cali_file, twix_dixon_file, Subject_ID):
     fwhmG = disfit.fwhmG
     phase = dixonfit.phase
 
-    fwhmL[fwhmL<0] = 0
-    # pdb.set_trace()
+    fwhmL[fwhmL<0] = 1e-4
+    fwhmG[fwhmG<0] = 1e-4
+
     assert np.prod(fwhmL>0), "There is a negative value in Dissolved fitting fwhmL"
-    # assert np.prod(fwhmG>0), "There is a negative value in Dissolved fitting fwhmG"
+    assert np.prod(fwhmG>0), "There is a negative value in Dissolved fitting fwhmG"
 
     # set up bounds to constrain frequency and fwhm change
     lb = np.stack((0.33*area,freq-1.0,0.9*fwhmL,0.9*fwhmG-1.0,[-np.inf,-np.inf,-np.inf])).flatten()

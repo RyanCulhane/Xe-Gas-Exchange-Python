@@ -174,73 +174,73 @@ venhistogram_rat = {
 
 ################################################################################
 ## parameters for rat mapping
-mean_vent_rat = 0.6026
-std_vent_rat = 0.1895
+mean_vent_rat = 0.5885
+std_vent_rat = 0.2051
 thre_vent_rat = [mean_vent_rat-2*std_vent_rat, mean_vent_rat-std_vent_rat, mean_vent_rat,
              mean_vent_rat+std_vent_rat, mean_vent_rat+1.5*std_vent_rat]
 
-mean_bar_rat =  33.3981
-std_bar_rat = 24.8021
+mean_bar_rat =  34.3656
+std_bar_rat = 22.5930
 thre_bar_rat = [mean_bar_rat-std_bar_rat, mean_bar_rat-0.5*std_bar_rat, mean_bar_rat, mean_bar_rat+0.5*std_bar_rat,
             mean_bar_rat+1.0*std_bar_rat, mean_bar_rat+1.5*std_bar_rat, mean_bar_rat+2.0*std_bar_rat]
 
-mean_rbc_rat = 14.7685
-std_rbc_rat = 14.2638
-thre_rbc_rat = [mean_rbc_rat-2.0/3.0*std_rbc_rat, mean_rbc_rat-1.0/3.0*std_rbc_rat, mean_rbc_rat,
+mean_rbc_rat = 14.7928
+std_rbc_rat = 12.2266
+thre_rbc_rat = [mean_rbc_rat-std_rbc_rat, mean_rbc_rat-0.5*std_rbc_rat, mean_rbc_rat,
             mean_rbc_rat+std_rbc_rat, mean_rbc_rat+2.0*std_rbc_rat]
 
 rbchistogram_rat = {
         'color': (247.0/255,96.0/255,111.0/255),
         'x_lim': 75.0,
-        'y_lim': 0.1,
+        'y_lim': 0.08,
         'num_bins': 100,
         'refer_fit': (0.04, mean_rbc_rat, std_rbc_rat),
         'xticks': [0, 25, 50, 75],
-        'yticks': [0.05, 0.10],
+        'yticks': [0.04, 0.08],
 }
 
 barhistogram_rat = {
         'color': (0.4,0.7608,0.6471),
         'x_lim': 150.0,
-        'y_lim': 0.18,
+        'y_lim': 0.10,
         'num_bins': 100,
-        'refer_fit': (0.05, mean_bar_rat, std_rbc_rat),
+        'refer_fit': (0.05, mean_bar_rat, std_bar_rat),
         'xticks': [0, 50, 100,150],
-        'yticks': [0.05, 0.10, 0.15],
+        'yticks': [0.05, 0.10],
 }
 
 venhistogram_rat = {
         'color': (0.4196,0.6824,0.8392),
         'x_lim': 1.0,
-        'y_lim': 0.07,
+        'y_lim': 0.06,
         'num_bins': 100,
         'refer_fit': (0.03, mean_vent_rat, std_vent_rat),
         'xticks': [0.0, 0.5, 1.0],
-        'yticks': [0.02, 0.04, 0.06],
+        'yticks': [0.03, 0.06],
 }
 
 
 referece_stats_rat = {
-        'r_ven_defect_ave': '7',
-        'r_ven_defect_std':'3',
+        'r_ven_defect_ave': '5',
+        'r_ven_defect_std':'2',
         'r_ven_low_ave':'13',
         'r_ven_low_std':'2',
-        'r_ven_high_ave':'14',
+        'r_ven_high_ave':'13',
         'r_ven_high_std':'5',
 
-        'r_bar_defect_ave':'15',
-        'r_bar_defect_std':'4',
-        'r_bar_low_ave':'17',
-        'r_bar_low_std':'8',
-        'r_bar_high_ave':'5',
-        'r_bar_high_std':'4',
+        'r_bar_defect_ave':'18',
+        'r_bar_defect_std':'3',
+        'r_bar_low_ave':'14',
+        'r_bar_low_std':'4',
+        'r_bar_high_ave':'8',
+        'r_bar_high_std':'5',
 
-        'r_rbc_defect_ave':'25',
-        'r_rbc_defect_std':'7',
-        'r_rbc_low_ave':'16',
-        'r_rbc_low_std':'4',
-        'r_rbc_high_ave':'10',
-        'r_rbc_high_std':'6',
+        'r_rbc_defect_ave':'17',
+        'r_rbc_defect_std':'3',
+        'r_rbc_low_ave':'17',
+        'r_rbc_low_std':'3',
+        'r_rbc_high_ave':'16',
+        'r_rbc_high_std':'5',
 
         'r_RBC2barrier_ave':'0.48',
         'r_RBC2barrier_std':'0.03'

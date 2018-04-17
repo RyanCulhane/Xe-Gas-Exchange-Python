@@ -129,10 +129,19 @@ class GXSubject(object):
         self.gas_highreso = mat_input['gasVol_highreso']
         self.gas_highSNR = mat_input['gasVol_highSNR']
         self.dissolved = mat_input['dissolvedVol']
-        self.ute = abs(mat_input['uteVol'])
+        # self.ute = abs(mat_input['uteVol'])
 
-        fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask*.nii')[0]
+        fdata = self.data_dir+'/parameters.mat'
+        mat_input = sio.loadmat(fdata)
+        self.RBC2barrier = mat_input['meanRbc2barrier']
+        self.TE90 = mat_input['TE90']
+
+        # fmask = glob.glob(self.data_dir+'/BHUTE_Sub'+self.Subject_ID+'_FID*mask*.nii')[0]
+        fmask = glob.glob(self.data_dir+'/BHUTE*mask_grow.nii')[0]
         self.mask = np.array(nib.load(fmask).get_data())
+
+        fute = glob.glob(self.data_dir+'/BHUTE*recon.nii')[0]
+        self.ute = np.array(nib.load(fute).get_data())
 
     def spectFit(self):
         from GX_Spec_utils import spect_fit
@@ -168,7 +177,6 @@ class GXSubject(object):
     def uteRegister(self):
         ## temporal usage
         from GX_Map_utils import register
-
         self.ute_reg, self.mask_reg = register(gas_highreso = abs(self.gas_highreso),
                                                ute          = self.ute,
                                                mask         = self.mask.astype(float))

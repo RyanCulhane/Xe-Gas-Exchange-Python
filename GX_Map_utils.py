@@ -154,7 +154,6 @@ def disBinning(discomp,gas_highSNR,bin_threshold, mask,cor=1):
 def register(gas_highreso, ute, mask):
 
     # register mask to gas_highreso, and apply the transform to UTE
-
     sitk_mask = sitk.GetImageFromArray(mask)
     sitk_gas = sitk.GetImageFromArray(gas_highreso)
     sitk_ute = sitk.GetImageFromArray(ute)
