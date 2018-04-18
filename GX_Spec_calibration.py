@@ -5,6 +5,7 @@ import pdb, os, sys
 from GX_Recon_utils import read_twix_hdr
 from GX_Spec_classmap import NMR_TimeFit
 from bounded_lsq.least_squares import least_squares
+from twilio.rest import Client
 
 # twix_cali_file = 'meas_005002_cali.dat'
 def spect_calibration(twix_cali_file,result_file_path):
@@ -57,8 +58,9 @@ def spect_calibration(twix_cali_file,result_file_path):
     freq_target = freq + gasfit.freq
     freq_target = int(np.asscalar(np.round(freq_target)))
 
+    stream = '129Xe cloud is delivering calibration results:\r\n'
     print('\r\nFrequency_target = {:8.0f} Hz'.format(freq_target))
-    stream = 'Frequency_target = {:8.0f} Hz *****\r\n'.format(freq_target)
+    stream = stream + 'Frequency_target = {:8.0f} Hz *****\r\n'.format(freq_target)
 
     if((freq_target - freq_std) > freq_tol):
         print('***Warning! Frequency adjust exceeds tolerances; Check system')
@@ -150,6 +152,17 @@ def spect_calibration(twix_cali_file,result_file_path):
     with open(result_file_path,'w') as cali_doc:
         cali_doc.write(stream)
 
+    return stream
+
+def send_sms(stream):
+    #pw: wangziyiteamxenon
+    account = "AC4b04ea1e43470e3cec31832f8c8feba0"
+    token = "4e84ac7b05bbc8b2e6a607d69bb37fba"
+    client = Client(account, token)
+
+    # send a sms text to 
+    message = client.messages.create(to="+19198086264", from_="+12512728380",
+                                     body=stream)
 # main function here
 if __name__ == "__main__":
 
@@ -170,4 +183,6 @@ if __name__ == "__main__":
         print "Usage 1: python GX_Spec_calibration.py <calibration twix file>"
         sys.exit(-1)
 
-    spect_calibration(twix_cali_file = twix_cali_file,result_file_path=result_file_path)
+    stream = spect_calibration(twix_cali_file = twix_cali_file,result_file_path=result_file_path)
+    pdb.set_trace()
+    send_sms(stream)
