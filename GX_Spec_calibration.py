@@ -57,12 +57,12 @@ def spect_calibration(twix_cali_file,result_file_path):
     freq_target = freq + gasfit.freq
     freq_target = int(np.asscalar(np.round(freq_target)))
 
-    print('\nFrequency_target = {:8.0f} Hz'.format(freq_target))
-    stream = 'Frequency_target = {:8.0f} Hz *****\n'.format(freq_target)
+    print('\r\nFrequency_target = {:8.0f} Hz'.format(freq_target))
+    stream = 'Frequency_target = {:8.0f} Hz *****\r\n'.format(freq_target)
 
     if((freq_target - freq_std) > freq_tol):
         print('***Warning! Frequency adjust exceeds tolerances; Check system')
-        stream = stream + '***Warning! Frequency adjust exceeds tolerances; Check system\n'
+        stream = stream + '***Warning! Frequency adjust exceeds tolerances; Check system\r\n'
 
     # 2. report TE90
     deltaPhase = disfit.phase[1] - disfit.phase[0]
@@ -72,11 +72,11 @@ def spect_calibration(twix_cali_file,result_file_path):
     TE90 = te + deltaTE90*1e6 # in usec
 
     print("TE90 = {:3.2f} ms".format(TE90/1000))
-    stream = stream + "TE90 = {:3.2f} ms *****\n".format(TE90/1000)
+    stream = stream + "TE90 = {:3.2f} ms *****\r\n".format(TE90/1000)
 
     if abs(deltaPhase)> 90 :
         print('***WARNING! Phi_cal = {:3.0f}{}; Use min TE!'.format(deltaPhase,u'\u00b0'.encode('utf8')))
-        stream = stream + '***WARNING! Phi_cal = {:3.0f}{}; Use min TE!\n'.format(deltaPhase,u'\u00b0'.encode('utf8'))
+        stream = stream + '***WARNING! Phi_cal = {:3.0f}{}; Use min TE!\r\n'.format(deltaPhase,u'\u00b0'.encode('utf8'))
 
     # 3. report reference voltage (Flip angle)
     calData = data[(nDis+1):(nDis+nCal+1),:]
@@ -94,24 +94,23 @@ def spect_calibration(twix_cali_file,result_file_path):
         return residual
 
     max_nfev = 13000
-    xtol = 1e-20
     bounds = ([-np.inf, -np.inf],[np.inf, np.inf])
 
     fit_result = least_squares(fun=calc_fitting_residual, x0=guess, jac='2-point', bounds=bounds,
-                               method='dogbox',xtol=xtol, max_nfev=max_nfev)
+                               method='dogbox', max_nfev=max_nfev)
 
     flip_angle = abs(fit_result['x'][1]*180/np.pi)
     v_ref_scale_factor = flip_angle_target/flip_angle
 
     print('True Ref scale factor = {:3.3f}'.format(v_ref_scale_factor))
-    stream = stream + 'True Ref scale factor = {:3.3f} *****\n'.format(v_ref_scale_factor)
+    stream = stream + 'True Ref scale factor = {:3.3f} *****\r\n'.format(v_ref_scale_factor)
 
     print('For 600V calibration, True_Ref = {:3.0f} V'.format(600*v_ref_scale_factor))
-    stream = stream +'For 600V calibration, True_Ref = {:3.0f} V *****\n'.format(600*v_ref_scale_factor)
+    stream = stream +'For 600V calibration, True_Ref = {:3.0f} V *****\r\n'.format(600*v_ref_scale_factor)
 
     if(v_ref_scale_factor > TrueRefScale_tol):
         print('***Warning! Excessive calibration scale factor; check system')
-        stream = stream + '***Warning! Excessive calibration scale factor; check system\n'
+        stream = stream + '***Warning! Excessive calibration scale factor; check system\r\n'
 
     # 4. calculate and report SNR for dissolved peaks
     time_fit = disfit.calc_time_sig(disfit.t)
@@ -119,8 +118,8 @@ def spect_calibration(twix_cali_file,result_file_path):
     n25pct = int(round(len(time_res)/4.0))
     std25 = np.std(time_res[-n25pct:])
     SNR_dis = disfit.area/std25
-    print('\nSNR for dissolved peaks = {:3.1f}, {:3.1f}, {:3.1f}'.format(SNR_dis[0], SNR_dis[1], SNR_dis[2]))
-    stream = stream + '\nSNR for dissolved peaks = {:3.1f}, {:3.1f}, {:3.1f}\n'.format(SNR_dis[0], SNR_dis[1], SNR_dis[2])
+    print('\r\nSNR for dissolved peaks = {:3.1f}, {:3.1f}, {:3.1f}'.format(SNR_dis[0], SNR_dis[1], SNR_dis[2]))
+    stream = stream + '\r\nSNR for dissolved peaks = {:3.1f}, {:3.1f}, {:3.1f}\r\n'.format(SNR_dis[0], SNR_dis[1], SNR_dis[2])
 
     # 5. calculate and report SNR for gas
     time_fit = gasfit.calc_time_sig(gasfit.t)
@@ -129,24 +128,24 @@ def spect_calibration(twix_cali_file,result_file_path):
     std25 = np.std(time_res[-n25pct:])
     SNR_gas=gasfit.area/std25
     print('SNR for gas peak = {:3.1f}'.format(SNR_gas[0]))
-    stream = stream + 'SNR for gas peak = {:3.1f}\n'.format(SNR_gas[0])
+    stream = stream + 'SNR for gas peak = {:3.1f}\r\n'.format(SNR_gas[0])
 
     if SNR_gas < SNR_tol:
         print('***WARNING! Gas FID SNR below minimums; Check Coil Plug')
-        stream = stream + '***WARNING! Gas FID SNR below minimums; Check Coil Plug\n'
+        stream = stream + '***WARNING! Gas FID SNR below minimums; Check Coil Plug\r\n'
 
     # 6. Quantify ammount of off resonance excitation
     gas_dis_ratio = disfit.area[2]/sum(disfit.area[:2])
-    print('\ngas_dis_ratio = {:3.3f}'.format(gas_dis_ratio))
-    stream = stream + '\ngas_dis_ratio = {:3.3f}\n'.format(gas_dis_ratio)
+    print('\r\ngas_dis_ratio = {:3.3f}'.format(gas_dis_ratio))
+    stream = stream + '\r\ngas_dis_ratio = {:3.3f}\r\n'.format(gas_dis_ratio)
 
     # 7. Quantify RBC:Barrier ratio
     rbc_bar_ratio = disfit.area[0]/disfit.area[1]
     print('rbc_bar_ratio = {:3.3f}'.format(rbc_bar_ratio))
     print('RbcBar_{:2.0f} = {:3.3f}'.format(rbc_bar_adjust,rbc_bar_ratio*rbc_bar_adjust/100.0))
 
-    stream = stream + 'rbc_bar_ratio = {:3.3f}\n'.format(rbc_bar_ratio)
-    stream = stream + 'RbcBar_{:2.0f} = {:3.3f}\n'.format(rbc_bar_adjust,rbc_bar_ratio*rbc_bar_adjust/100.0)
+    stream = stream + 'rbc_bar_ratio = {:3.3f}\r\n'.format(rbc_bar_ratio)
+    stream = stream + 'RbcBar_{:2.0f} = {:3.3f}\r\n'.format(rbc_bar_adjust,rbc_bar_ratio*rbc_bar_adjust/100.0)
 
     with open(result_file_path,'w') as cali_doc:
         cali_doc.write(stream)
@@ -156,19 +155,19 @@ if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
         twix_cali_file = sys.argv[1]
-        file_name = 'calibration.txt'
+        result_file_path = 'calibration.txt'
 
     elif(len(sys.argv) == 3):
         twix_cali_file = sys.argv[1]
-        file_name = sys.argv[2]
+        result_file_path = sys.argv[2]
 
     elif(len(sys.argv) == 1):
         twix_cali_file = 'meas_005002_cali.dat'
-        file_name = 'calibration.txt'
+        result_file_path = 'calibration_result.txt'
 
     else:
         print "Usage 1: python GX_Spec_calibration.py <calibration twix file> <output file direction/name>"
         print "Usage 1: python GX_Spec_calibration.py <calibration twix file>"
         sys.exit(-1)
 
-    spect_calibration(twix_cali_file = twix_cali_file,file_name=file_name)
+    spect_calibration(twix_cali_file = twix_cali_file,result_file_path=result_file_path)
