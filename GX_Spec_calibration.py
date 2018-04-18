@@ -7,7 +7,7 @@ from GX_Spec_classmap import NMR_TimeFit
 from bounded_lsq.least_squares import least_squares
 
 # twix_cali_file = 'meas_005002_cali.dat'
-def spect_calibration(twix_cali_file,file_name):
+def spect_calibration(twix_cali_file,result_file_path):
     ## ************************************************part 1, fit on calibration
     scans, evps = readTwix(twix_cali_file)
 
@@ -58,7 +58,7 @@ def spect_calibration(twix_cali_file,file_name):
     freq_target = int(np.asscalar(np.round(freq_target)))
 
     print('\nFrequency_target = {:8.0f} Hz'.format(freq_target))
-    stream = 'Frequency_target = {:8.0f} Hz\n'.format(freq_target)
+    stream = 'Frequency_target = {:8.0f} Hz *****\n'.format(freq_target)
 
     if((freq_target - freq_std) > freq_tol):
         print('***Warning! Frequency adjust exceeds tolerances; Check system')
@@ -72,7 +72,7 @@ def spect_calibration(twix_cali_file,file_name):
     TE90 = te + deltaTE90*1e6 # in usec
 
     print("TE90 = {:3.2f} ms".format(TE90/1000))
-    stream = stream + "TE90 = {:3.2f} ms\n".format(TE90/1000)
+    stream = stream + "TE90 = {:3.2f} ms *****\n".format(TE90/1000)
 
     if abs(deltaPhase)> 90 :
         print('***WARNING! Phi_cal = {:3.0f}{}; Use min TE!'.format(deltaPhase,u'\u00b0'.encode('utf8')))
@@ -104,10 +104,10 @@ def spect_calibration(twix_cali_file,file_name):
     v_ref_scale_factor = flip_angle_target/flip_angle
 
     print('True Ref scale factor = {:3.3f}'.format(v_ref_scale_factor))
-    stream = stream + 'True Ref scale factor = {:3.3f}\n'.format(v_ref_scale_factor)
+    stream = stream + 'True Ref scale factor = {:3.3f} *****\n'.format(v_ref_scale_factor)
 
     print('For 600V calibration, True_Ref = {:3.0f} V'.format(600*v_ref_scale_factor))
-    stream = stream +'For 600V calibration, True_Ref = {:3.0f} V\n'.format(600*v_ref_scale_factor)
+    stream = stream +'For 600V calibration, True_Ref = {:3.0f} V *****\n'.format(600*v_ref_scale_factor)
 
     if(v_ref_scale_factor > TrueRefScale_tol):
         print('***Warning! Excessive calibration scale factor; check system')
@@ -148,9 +148,10 @@ def spect_calibration(twix_cali_file,file_name):
     stream = stream + 'rbc_bar_ratio = {:3.3f}\n'.format(rbc_bar_ratio)
     stream = stream + 'RbcBar_{:2.0f} = {:3.3f}\n'.format(rbc_bar_adjust,rbc_bar_ratio*rbc_bar_adjust/100.0)
 
-    with open(file_name,'w') as cali_doc:
+    with open(result_file_path,'w') as cali_doc:
         cali_doc.write(stream)
 
+# main function here
 if __name__ == "__main__":
 
     if (len(sys.argv) == 2):
