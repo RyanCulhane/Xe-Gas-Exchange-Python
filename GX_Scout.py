@@ -16,6 +16,7 @@ drive = '/media/rawdata'
 
 # acquire list of subjects that have been processed
 subject_pattern = re.compile('[0-9]{6}')
+drive_subject_p = re.compile('[0-9]{3}-[0-9]{3}[A-F]?')
 key = 0
 
 if os.listdir(drive) == []:
@@ -24,6 +25,7 @@ else:
     # check, if the driver is connected
     local_subjects = [ name for name in os.listdir(local) if os.path.isdir(os.path.join(local, name)) ]
 
+    # this command will match for exact name
     local_subjects = [ name for name in local_subjects if re.match(subject_pattern, name)]
 
     # acquire list of new subject from the driver
@@ -43,7 +45,16 @@ else:
             # if all three files exit
             if(len(list_cali)*len(list_ute)*len(list_dixon) > 0):
 
-                subject_name = path[-7:-4] + path[-3:]
+                # using regular expression pattern match to find subject name
+                subject_name = drive_subject_p.findall(path)
+
+                if len(subject_name) != 1:
+                    print("new potential scan found, illegal naming!: "+path)
+                    continue
+
+                subject_name = subject_name[0]
+                subject_name = subject_name[0:3]+subject_name[4:]
+                pdb.set_trace()
 
                 # ensure that the subject has not been previously processed
                 if (subject_name not in local_subjects):
@@ -69,7 +80,7 @@ else:
                 # in case we ran a second Dixon
                 if(len(list_dixon) > 1):
 
-                    subject_name = path[-7:-4] + path[-3:] +'_highBW'
+                    subject_name = subject_name +'_highBW'
 
                     if (subject_name not in local_subjects):
 
