@@ -54,7 +54,6 @@ else:
 
                 subject_name = subject_name[0]
                 subject_name = subject_name[0:3]+subject_name[4:]
-                pdb.set_trace()
 
                 # ensure that the subject has not been previously processed
                 if (subject_name not in local_subjects):

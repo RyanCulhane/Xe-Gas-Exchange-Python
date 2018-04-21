@@ -1,4 +1,7 @@
-import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+
 import numpy as np
 import nibabel as nib
 import scipy.io as sio
@@ -6,7 +9,7 @@ import glob, os
 import sys
 import time
 
-from matplotlib import pyplot as plt
+
 
 import pdb
 
@@ -113,7 +116,7 @@ class GXSubject(object):
 
         from GX_Recon_utils import recon_ute, recon_dixon
 
-        ute_file = glob.glob(self.data_dir+'/meas*1H_BHUTE_Radial*.dat')[0]
+        ute_file = glob.glob(self.data_dir+'/meas*BHUTE_Radial*.dat')[0]
         self.ute = abs(recon_ute(ute_file))
 
         dixon_file = glob.glob(self.data_dir+'/meas*Xe_Radial_Dixon*.dat')[0]

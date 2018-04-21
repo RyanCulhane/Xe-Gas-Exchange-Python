@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+
 from scipy.stats import norm
 import scipy.sparse as sps
 import numpy as np
@@ -7,7 +11,7 @@ import os
 import re
 from numpy.ctypeslib import ndpointer
 from GX_Twix_parser import readTwix
-from matplotlib import pyplot as plt
+
 
 from GX_Benchmark_utils import timerfunc # decorator for timing a function
 from memory_profiler import profile # decorator to monitor memory usage
@@ -66,8 +70,8 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
     # 		unsigned int *n_nonsparse_entries,
     # 		unsigned int max_size,
     # 		int force_dim)
-
-    _sparse = ct.CDLL(os.getcwd()+'/libsparse.so')
+    # pdb.set_trace()
+    _sparse = ct.CDLL(os.path.dirname(__file__)+'/libsparse.so')
 
     _sparse.sparse_gridding_distance.argtypes = (\
      ct.POINTER(ct.c_double),ct.c_double, ct.c_uint, ct.c_uint, ct.POINTER(ct.c_uint),\
@@ -115,7 +119,7 @@ def sparse_gridding_c(traj, kernel_para, matrix_size, force_dim):
     return sample_indices, voxel_indices, distances
 
 # @profile
-@timerfunc
+# @timerfunc
 def gen_traj_c(num_projs, traj_type):
     # generate xyz coordinates for the trajectory samples based on the number of projs and traj type
     # traj_type:
@@ -128,7 +132,7 @@ def gen_traj_c(num_projs, traj_type):
     # output 3 coordinates of the trajectory points
     output_size = 3*num_projs
 
-    _traj = ct.CDLL(os.getcwd()+'/libtraj.so')
+    _traj = ct.CDLL(os.path.dirname(__file__)+'/libtraj.so')
     _traj.gen_traj.argtypes = (ct.c_long,ct.c_long)
     _traj.gen_traj.restype = ndpointer(dtype=ct.c_double, shape=(output_size,))
 
@@ -349,7 +353,6 @@ def recon_dixon(twix_file):
         # if the field was not used, set it to 0
         gradient_delay = 0
 
-    pdb.set_trace()
     npts = np.shape(data_dixon)[1]
     nFrames = np.shape(data_dixon)[0]+2 # the last 2 are spectrums
     TE90 = float(meas_dict['alTE'].split()[0])
@@ -365,7 +368,7 @@ def recon_dixon(twix_file):
         'decay_time': 60,
         'del_x': gradient_delay-13,
         'del_y': gradient_delay-14,
-        'del_z': gradient_delay4-9,
+        'del_z': gradient_delay-9,
     }
 
     x, y, z = generate_traj(**gen_traj_dict)

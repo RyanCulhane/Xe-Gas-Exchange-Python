@@ -1,3 +1,8 @@
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+from matplotlib.pyplot import rc, xlim, ylim
+
 import os
 import numpy as np
 import nibabel as nib
@@ -9,8 +14,7 @@ import math
 from scipy.ndimage.morphology import binary_dilation
 import pdfkit
 
-from matplotlib import pyplot as plt
-from matplotlib.pyplot import rc, xlim, ylim
+
 
 import pdb
 
@@ -226,13 +230,14 @@ def mergeRGBandGray(ute_slice,binning_slice):
     return colormap
 
 def biasFieldCor(image, mask):
+    current_path = os.path.dirname(__file__)
 
-    pathInput = 'image.nii'
-    pathMask = 'mask.nii'
-    pathOutput = 'image_cor.nii'
-    pathBiasField = 'biasfield.nii'
+    pathInput = current_path+ '/image.nii'
+    pathMask = current_path + '/mask.nii'
+    pathOutput = current_path + '/image_cor.nii'
+    pathBiasField = current_path + '/biasfield.nii'
 
-    pathN4 = './N4BiasFieldCorrection'
+    pathN4 = current_path + '/N4BiasFieldCorrection'
 
     # save the inputs into nii files so the execute N4 can read in
     nii_imge = nib.Nifti1Image(abs(image), np.eye(4))
@@ -549,15 +554,17 @@ def pdfScaleMerge(input_file1, input_file2, output_file, scale=1):
 
 def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box, referece_stats, ratflag=0):
     # reder html using the templates and stats
-    if(ratflag==0):
-        temp_clinical = "html_tmp/temp_clinical.html"
-        temp_technical = "html_tmp/temp_technical.html"
-    else:
-        temp_clinical = "html_tmp/temp_clinical_rat.html"
-        temp_technical = "html_tmp/temp_technical_rat.html"
+    current_path = os.path.dirname(__file__)
 
-    report_clinical = "report_clinical.html"
-    report_technical = "report_technical.html"
+    if(ratflag==0):
+        temp_clinical = current_path+"/html_tmp/temp_clinical.html"
+        temp_technical = current_path+"/html_tmp/temp_technical.html"
+    else:
+        temp_clinical = current_path+"/html_tmp/temp_clinical_rat.html"
+        temp_technical = current_path+"/html_tmp/temp_technical_rat.html"
+
+    report_clinical = current_path + "/report_clinical.html"
+    report_technical = current_path + "/report_technical.html"
 
     def adj_format1(x):
         num = np.around((x)*100,decimals=0).astype(int)
@@ -628,7 +635,7 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box, referece_stats, rat
         'margin-left': 0.1,
         'dpi':300,
         # 'zoom':2,
-        'disable-smart-shrinking':'',
+        # 'disable-smart-shrinking':'',
         'encoding': "UTF-8",
         }
 
@@ -636,6 +643,11 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box, referece_stats, rat
     pdf_clinical = data_dir+'/report_clinical_'+Subject_ID+'.pdf'
     pdf_technical = data_dir+'/report_technical_'+Subject_ID+'.pdf'
     pdf_merge = data_dir+'/report_'+Subject_ID+'.pdf'
+
+    print('*****report_clinical: '+report_clinical)
+    print('*****report_technical: '+report_technical)
+    print('*****pdf_clinical: '+pdf_clinical)
+    print('*****pdf_technical: '+pdf_technical)
 
     # pdb.set_trace()
 

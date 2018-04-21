@@ -4,16 +4,20 @@ Created on Jan.01.16
 
 @author: ZiyiW
 """
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+
 from keras import models
 from keras.models import load_model
 import numpy as np
 import h5py ##might need this
-from matplotlib import pyplot as plt
-import pdb
+
+import pdb, os
 
 def CNNpredict(ute):
     # use SegNet model to make segmentation
-    mymodel = 'myModel_utegrow_180201.h5'
+    mymodel = os.path.dirname(__file__)+'/myModel_utegrow_180201.h5'
 
     n_labels = 2
     # pdb.set_trace()

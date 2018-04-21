@@ -10,7 +10,7 @@ def GX_Process(data_dir, Subject_ID):
     subject.GXRecon()
     subject.GXMapping()
     subject.saveMat()
-    # subject.sendEmail()
+    subject.sendEmail()
 
 if __name__ == "__main__":
 

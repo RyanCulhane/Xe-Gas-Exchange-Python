@@ -4,12 +4,16 @@ Created on Apirl.05.18
 
 @author: ZiyiW
 """
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+
 from keras import models
 from keras.models import load_model
 import numpy as np
 import h5py ##might need this
-from matplotlib import pyplot as plt
-import pdb
+
+import pdb, os
 from GX_Map_utils import fullMontage
 from GX_Benchmark_utils import timerfunc
 import scipy.io as sio
@@ -24,7 +28,7 @@ img_std = 66.01
 @timerfunc
 def CNNpredict_3D(ute):
     # use SegNet model to make segmentation
-    mymodel = 'myModel_utegrow_180403.h5'
+    mymodel = os.path.dirname(__file__)+'/myModel_utegrow_180403.h5'
 
     n_labels = 2
     # pdb.set_trace()

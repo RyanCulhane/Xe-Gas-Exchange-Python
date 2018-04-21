@@ -1,5 +1,5 @@
 # Import smtplib for the actual sending function
-import smtplib
+import smtplib, os
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
@@ -19,7 +19,7 @@ def send_email(data_dir, Subject_ID):
     msg['To'] = ", ".join(you)
 
     # insert body text
-    fp = open('email.txt', 'rb')
+    fp = open(os.path.dirname(__file__)+'/email.txt', 'rb')
     msg.attach(MIMEText(fp.read(), 'plain'))
     fp.close()
 

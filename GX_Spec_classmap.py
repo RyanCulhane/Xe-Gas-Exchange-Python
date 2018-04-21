@@ -3,6 +3,8 @@ import scipy.sparse as sps
 import numpy as np
 import pdb
 from bounded_lsq.least_squares import least_squares
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 ## reference
 

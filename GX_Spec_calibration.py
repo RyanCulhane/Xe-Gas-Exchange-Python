@@ -160,8 +160,12 @@ def send_sms(stream):
     token = "4e84ac7b05bbc8b2e6a607d69bb37fba"
     client = Client(account, token)
 
-    # send a sms text to 
+    # send a sms text to myself
     message = client.messages.create(to="+19198086264", from_="+12512728380",
+                                     body=stream)
+
+    # send a sms text to Bas
+    message = client.messages.create(to="+19199231981", from_="+12512728380",
                                      body=stream)
 # main function here
 if __name__ == "__main__":
