@@ -194,12 +194,12 @@ class GXRat(object):
 
     def dixonDecomp(self):
         ## Dixon decomposition to get rbc and barrier from dissolved
-        from GX_Map_utils import dixonDecomp
+        from GX_Map_utils import dixonDecomp_simple
 
-        self.rbc, self.barrier = dixonDecomp(gas_highSNR     = self.gas_highSNR,
-                                             dissolved       = self.dissolved,
-                                             mask_vent       = self.mask_reg_vent,
-                                             meanRbc2barrier = self.RBC2barrier)
+        self.rbc, self.barrier = dixonDecomp_simple(gas_highSNR     = self.gas_highSNR,
+                                                    dissolved       = self.dissolved,
+                                                    mask_vent       = self.mask_reg_vent,
+                                                    meanRbc2barrier = self.RBC2barrier)
     def barBinning(self):
         ## binning for barrier
         from GX_defineColormaps import thre_bar_rat

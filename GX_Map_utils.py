@@ -13,9 +13,6 @@ import warnings
 import math
 from scipy.ndimage.morphology import binary_dilation
 import pdfkit
-
-
-
 import pdb
 
 def getIndexMaxOnes(arr):
@@ -101,6 +98,21 @@ def dixonDecomp(gas_highSNR,dissolved,mask_vent,meanRbc2barrier):
     # sitk.WriteImage(sitk_barrier,"barrier.nii")
     return rbc, barrier
 
+def dixonDecomp_simple(gas_highSNR,dissolved,mask_vent,meanRbc2barrier):
+
+    ## apply delta angfe from RBC:barrier ******************
+    desired_angle = np.arctan2(meanRbc2barrier,1)
+
+    netVet_lung = np.sum(dissolved[mask_vent])
+    current_angle = np.arctan2(np.imag(netVet_lung), np.real(netVet_lung))
+    delta_angle = desired_angle - current_angle
+
+    rotVol = np.multiply(dissolved,np.exp(1j*delta_angle))
+
+    rbc = np.imag(rotVol)
+    barrier = np.real(rotVol)
+    return rbc, barrier
+
 def binning(volume,thresholds):
 
     # volume: mask_vented, thresholded 3D volume
@@ -169,9 +181,14 @@ def register(gas_highreso, ute, mask):
     elastixImageFilter.SetMovingImage(sitk_mask) # mask
 
     # set up parameters for the warpping, we use affine first
-    parameterMapVector = sitk.VectorOfParameterMap()
-    parameterMapVector.append(sitk.GetDefaultParameterMap("affine")) #"rigid"
-    elastixImageFilter.SetParameterMap(parameterMapVector)
+    # parameterMapVector = sitk.VectorOfParameterMap()
+    # manually adjust values
+    # parameterMapVector[0]['MaximumNumberOfIterations'] = '500'
+    # parameterMapVector.append(sitk.GetDefaultParameterMap("affine")) #"rigid"
+
+    parameterMap = sitk.GetDefaultParameterMap("affine")
+    parameterMap['MaximumNumberOfIterations'] = ['1024'] # increase the number of iterations
+    elastixImageFilter.SetParameterMap(parameterMap)
 
     elastixImageFilter.Execute()
 

@@ -18,6 +18,7 @@ import pdb, os
 def CNNpredict(ute):
     # use SegNet model to make segmentation
     mymodel = os.path.dirname(__file__)+'/myModel_utegrow_180201.h5'
+    # mymodel = os.path.dirname(__file__)+'/myModel_utegrow_180403.h5'
 
     n_labels = 2
     # pdb.set_trace()
@@ -47,6 +48,8 @@ def CNNpredict(ute):
         ute_slice[ute_slice > 1] = 1
 
         ute_slice = np.multiply(ute_slice,255)
+
+        # ute_slice = (ute_slice - 90.3463)/60.002483 # this is used for the newer model
 
         # pdb.set_trace()
         mask_slice = autoencoder.predict(np.reshape(ute_slice,(1,img_w,img_h,1)))

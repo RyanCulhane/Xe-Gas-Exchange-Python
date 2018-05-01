@@ -6,7 +6,7 @@ import glob
 from shutil import copyfile
 
 
-target_p = '/home/ziyiw/Patients/'
+target_p = '/home/ziyiw/Patients_old/'
 destination_p = '/media/sharedrive/shared/_ziyi/ColorStacks_Siemens/'
 des_rep = '/media/sharedrive/shared/_ziyi/Report_Siemens/'
 

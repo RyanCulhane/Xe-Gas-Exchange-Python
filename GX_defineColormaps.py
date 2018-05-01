@@ -1,10 +1,13 @@
 import numpy as np
 
-# This file defines the thresholds of the binning method
+''' This file defines the thresholds of the binning method '''
 mean_vent = 0.5098
 std_vent = 0.1899
 thre_vent = [mean_vent-2*std_vent, mean_vent-std_vent, mean_vent,
              mean_vent+std_vent, mean_vent+2*std_vent]
+
+# # thresholds derived from 2 new healthies
+# thre_vent = [0.1135,0.3965,0.6766,0.8340,0.9453]
 
 mean_bar = 0.4859
 std_bar = 0.1484
@@ -13,9 +16,15 @@ thre_bar = [mean_bar-2*std_bar, mean_bar-std_bar, mean_bar, mean_bar+std_bar,
 
 mean_rbc = 0.2592
 std_rbc = 0.1038
+
+# # derived from the 2 new healthy
+# mean_rbc = 0.3970
+# std_rbc = 0.2846/2
+
 thre_rbc = [mean_rbc-2*std_rbc, mean_rbc-std_rbc, mean_rbc,
             mean_rbc+std_rbc, mean_rbc+2*std_rbc]
 
+''' defines the color parameters for the maps '''
 # bar2gas [brown color from colorbrewer]
 barmap= np.zeros((9,3))
 barmap[0,:] = [0, 0, 0] # background
@@ -60,7 +69,8 @@ short_index2color = {
         7: [0, 0, 1]
     }
 
-## parameters for histograms
+''' defines the parameters for the histogram plotting'''
+
 venhistogram = {
         'color': (0.4196,0.6824,0.8392),
         'x_lim': 1.0,
@@ -100,6 +110,7 @@ rbchistogram = {
 #         'rbc_yticks': [0.05, 0.10],
 # }
 
+''' defines the parameters for the healthy reference numbers in the table '''
 referece_stats = {
         'r_ven_defect_ave': '1',
         'r_ven_defect_std':'<1',
@@ -174,39 +185,39 @@ venhistogram_rat = {
 
 ################################################################################
 ## parameters for rat mapping
-mean_vent_rat = 0.5885
+mean_vent_rat = 0.5879
 std_vent_rat = 0.2051
 thre_vent_rat = [mean_vent_rat-2*std_vent_rat, mean_vent_rat-std_vent_rat, mean_vent_rat,
              mean_vent_rat+std_vent_rat, mean_vent_rat+1.5*std_vent_rat]
 
-mean_bar_rat =  34.3656
-std_bar_rat = 22.5930
+mean_bar_rat =  36.9466
+std_bar_rat = 22.2130
 thre_bar_rat = [mean_bar_rat-std_bar_rat, mean_bar_rat-0.5*std_bar_rat, mean_bar_rat, mean_bar_rat+0.5*std_bar_rat,
             mean_bar_rat+1.0*std_bar_rat, mean_bar_rat+1.5*std_bar_rat, mean_bar_rat+2.0*std_bar_rat]
 
-mean_rbc_rat = 14.7928
-std_rbc_rat = 12.2266
+mean_rbc_rat = 17.6954
+std_rbc_rat = 12.3618
 thre_rbc_rat = [mean_rbc_rat-std_rbc_rat, mean_rbc_rat-0.5*std_rbc_rat, mean_rbc_rat,
             mean_rbc_rat+std_rbc_rat, mean_rbc_rat+2.0*std_rbc_rat]
 
 rbchistogram_rat = {
         'color': (247.0/255,96.0/255,111.0/255),
-        'x_lim': 75.0,
-        'y_lim': 0.08,
+        'x_lim': 75,
+        'y_lim': 0.06,
         'num_bins': 100,
-        'refer_fit': (0.04, mean_rbc_rat, std_rbc_rat),
+        'refer_fit': (0.03, mean_rbc_rat, std_rbc_rat),
         'xticks': [0, 25, 50, 75],
-        'yticks': [0.04, 0.08],
+        'yticks': [0.03, 0.06],
 }
 
 barhistogram_rat = {
         'color': (0.4,0.7608,0.6471),
-        'x_lim': 150.0,
-        'y_lim': 0.10,
+        'x_lim': 150,
+        'y_lim': 0.06,
         'num_bins': 100,
-        'refer_fit': (0.05, mean_bar_rat, std_bar_rat),
+        'refer_fit': (0.03, mean_bar_rat, std_bar_rat),
         'xticks': [0, 50, 100,150],
-        'yticks': [0.05, 0.10],
+        'yticks': [0.03, 0.06],
 }
 
 venhistogram_rat = {
@@ -225,21 +236,21 @@ referece_stats_rat = {
         'r_ven_defect_std':'2',
         'r_ven_low_ave':'13',
         'r_ven_low_std':'2',
-        'r_ven_high_ave':'13',
+        'r_ven_high_ave':'14',
         'r_ven_high_std':'5',
 
-        'r_bar_defect_ave':'18',
-        'r_bar_defect_std':'3',
-        'r_bar_low_ave':'14',
-        'r_bar_low_std':'4',
-        'r_bar_high_ave':'8',
-        'r_bar_high_std':'5',
+        'r_bar_defect_ave':'15',
+        'r_bar_defect_std':'4',
+        'r_bar_low_ave':'15',
+        'r_bar_low_std':'5',
+        'r_bar_high_ave':'6',
+        'r_bar_high_std':'4',
 
-        'r_rbc_defect_ave':'17',
+        'r_rbc_defect_ave':'13',
         'r_rbc_defect_std':'3',
-        'r_rbc_low_ave':'17',
+        'r_rbc_low_ave':'19',
         'r_rbc_low_std':'3',
-        'r_rbc_high_ave':'16',
+        'r_rbc_high_ave':'13',
         'r_rbc_high_std':'5',
 
         'r_RBC2barrier_ave':'0.48',
