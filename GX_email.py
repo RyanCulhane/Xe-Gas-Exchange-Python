@@ -11,7 +11,8 @@ from email import encoders
 def send_email(data_dir, Subject_ID):
 
     me = 'xemri.test@gmail.com'
-    you = ["ziyi.wang@duke.edu","wangziyi1994@gmail.com"]
+    # set who do you want to send the email to
+    you = ["ziyi.wang@duke.edu","bastiaan.driehuys@duke.edu","mu.he@duke.edu","elianna.bier@duke.edu"]
 
     msg = MIMEMultipart()
     msg['Subject'] = 'Summary for Subject '+Subject_ID #% textfile
