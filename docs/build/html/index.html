@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to Zmap’s documentation! &mdash; Zmap 18.05.04 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Review of Gas Exchange Mapping" href="reviewofGXmap.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> Zmap
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">List of contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reviewofGXmap.html">Review of Gas Exchange Mapping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="systemstructure.html">System Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developmentmenu.html">Development Menu</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Zmap</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to Zmap’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-zmap-s-documentation">
+<h1>Welcome to Zmap’s documentation!<a class="headerlink" href="#welcome-to-zmap-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Zmap is a Python based program developed to facilitate <sup>129</sup>Xe MRI scan and analyze images. The goal of Zmap is to build a <strong>fully automated</strong> analysis pipeline from the image data created from MR scanner to a <strong>clinical report</strong> that contains all meaningful information from this subject. To achieve full automation, a model of convolutional neural networks is used for segmentation. To ensure extensibility, the functions and classes are built with hierarchical structures and uniform API for easy reuse.</p>
+<blockquote id="fig1">
+<div><a class="reference internal image-reference" href="_images/Slide1.PNG"><img alt="_images/Slide1.PNG" src="_images/Slide1.PNG" style="width: 100%;" /></a>
+<p>Figure 1. A fully automated pipeline for Gas Exchange Mapping.</p>
+</div></blockquote>
+<p>Currently Zmap provides functions in calibration and image process.</p>
+<ol class="arabic simple">
+<li>The calibration requires only the calibration twix file from Siemens, and the result will be a text file created at the folder of the calibration file. A  SMS text will also be sent to the pre-registered clients.</li>
+<li>The final clinical report, generated after the image processing, will be sent all through email to the pre-registered clients.</li>
+</ol>
+<blockquote id="fig2">
+<div><a class="reference internal image-reference" href="_images/Slide2.PNG"><img alt="_images/Slide2.PNG" src="_images/Slide2.PNG" style="width: 100%;" /></a>
+<p>Figure 2. A user story of Zmap. 3 files are acquired for each scan sequentially, the <strong>calibration</strong>, the <strong>Dixon</strong>, and the <strong>BHUTE</strong>. First, when the calibration file is acquired and uploaded to a shared folder by MR technician, a scout program will detect it and launch a calibration program to calculate TE<sub>90</sub>, reference voltage amplitude and target frequency. The results will be sent back to the technician (by a text file created at the same spot in the sharefolder, as well as a SMS text to a pre-registered number). Second, when all the 3 files are acquired and uploaded, another scout program will detect them and copy them to the workstation, lauch the main Zmap program to generate a clinical report, which will be sent to the clients via email.</p>
+</div></blockquote>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">List of contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reviewofGXmap.html">Review of Gas Exchange Mapping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gettingstarted.html#boot-ziyi-pc-and-connect-to-clinical-sharefolder">Boot Ziyi-PC and Connect to clinical sharefolder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gettingstarted.html#process-one-or-multiple-subjects">Process one or multiple subjects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gettingstarted.html#change-mapping-parameters-such-as-reference-thresholds">Change mapping parameters such as reference thresholds</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="systemstructure.html">System Structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="systemstructure.html#where-is-the-data-and-what-does-it-include">Where is the data and what does it include</a></li>
+<li class="toctree-l2"><a class="reference internal" href="systemstructure.html#how-is-the-program-structured">How is the program structured</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developmentmenu.html">Development Menu</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reviewofGXmap.html" class="btn btn-neutral float-right" title="Review of Gas Exchange Mapping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Ziyi Wang.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'18.05.04',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
