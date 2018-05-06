@@ -1,4 +1,4 @@
 
 Development Menu
 ====================================
-A menu for developers who are contributing to this project. Coming soon!
+A menu for developers who are contributing to this project. More coming soon!
