@@ -10,7 +10,7 @@ Briefly, there are 4 steps. First, the raw FIDs are read out from the Siemens .t
 
 .. _fig2:
 
-    .. image::  _static/Figures/Slide3.PNG
+    .. image::  _static/Slide3.PNG
        :width: 100%
 
-    Figure 3. A diagram of Gas exchange mapping that is conducted by Zmap main program.  
+    Figure 3. A diagram of Gas exchange mapping that is conducted by Zmap main program.

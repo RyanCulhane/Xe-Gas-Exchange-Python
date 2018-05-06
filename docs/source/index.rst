@@ -10,7 +10,7 @@ Zmap is a Python based program developed to facilitate \ :sup:`129`\ Xe MRI scan
 
 .. _fig1:
 
-    .. image::  _static/Figures/Slide1.PNG
+    .. image::  _static/Slide1.PNG
        :width: 100%
 
     Figure 1. A fully automated pipeline for Gas Exchange Mapping.
@@ -24,7 +24,7 @@ Currently Zmap provides functions in calibration and image process.
 
 .. _fig2:
 
-    .. image::  _static/Figures/Slide2.PNG
+    .. image::  _static/Slide2.PNG
        :width: 100%
 
     Figure 2. A user story of Zmap. 3 files are acquired for each scan sequentially, the **calibration**, the **Dixon**, and the **BHUTE**. First, when the calibration file is acquired and uploaded to a shared folder by MR technician, a scout program will detect it and launch a calibration program to calculate TE\ :sub:`90`\, reference voltage amplitude and target frequency. The results will be sent back to the technician (by a text file created at the same spot in the sharefolder, as well as a SMS text to a pre-registered number). Second, when all the 3 files are acquired and uploaded, another scout program will detect them and copy them to the workstation, lauch the main Zmap program to generate a clinical report, which will be sent to the clients via email.
