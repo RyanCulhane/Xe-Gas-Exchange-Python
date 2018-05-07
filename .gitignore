@@ -13,7 +13,7 @@
 *.zip
 *.m
 *.csv
-#.dat
+*.dat
 /Twix
 /html
 /__MACOSX
