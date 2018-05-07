@@ -9,11 +9,22 @@ import nibabel as nib
 import scipy.io as sio
 import SimpleITK as sitk
 from skimage import color
+import skimage.morphology as skimo
 import warnings
 import math
 from scipy.ndimage.morphology import binary_dilation
 import pdfkit
 import pdb
+
+def remove_small_objects(mask, thre_per=0.015):
+    # remove small un-connected pieces in the generated mask
+    mask = mask.astype('bool')
+    num = np.sum(mask)
+    thre = num*thre_per
+
+    mask_n = skimo.remove_small_objects(ar=mask, min_size=thre, connectivity=3).astype('bool')
+
+    return(mask_n)
 
 def getIndexMaxOnes(arr):
     ## returns the starting index and ending index of the max consecutive ones

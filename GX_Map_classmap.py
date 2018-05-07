@@ -157,6 +157,7 @@ class GXSubject(object):
     def uteSegmentation(self):
         ## temporal usage
         from GX_CNNpredict import CNNpredict
+        from GX_Map_utils import remove_small_objects
 
         # fmask = 'BHUTE_Sub002102_FID49886_mask_grow.nii'
         # self.mask = np.array(nib.load(fmask).get_data(),dtype='bool')
@@ -164,7 +165,8 @@ class GXSubject(object):
         # fute = 'BHUTE_Sub002102_FID49886_recon.nii'
         # self.ute = np.array(nib.load(fute).get_data())
 
-        self.mask = CNNpredict(ute = self.ute)
+        mask = CNNpredict(ute = self.ute)
+        self.mask = remove_small_objects(mask=mask, thre_per=0.013):
 
     def alignImages(self):
 
