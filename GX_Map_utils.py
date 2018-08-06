@@ -689,6 +689,9 @@ def genHtmlPdf(Subject_ID, data_dir, RBC2barrier, stats_box, referece_stats, rat
     # scale and merge pdf to convert to ppt
     pdfScaleMerge(input_file1=pdf_clinical, input_file2=pdf_technical, output_file=pdf_merge, scale=1)
 
+    #update the Google Spreadsheet
+    updateGoogleSheet(html_parameters=html_parameters)
+    
     # generate ppt
     genPPT(pdf_file=pdf_merge)
 
@@ -703,3 +706,32 @@ def genPPT(pdf_file):
     from ppt_pdf.cli_pdf_to_ppt import PdfToPpt
 
     PdfToPpt(pdf_file=pdf_file).execute()
+    
+def updateGoogleSheet(html_parameters):
+    print('**********Updating Google Sheet****************')
+    import gspread
+    from gspread import Worksheet
+    from oauth2client.service_account import ServiceAccountCredentials
+    scope = ['https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/drive']
+
+    # need to get this json file from Ryan and set the path in this line to the path to the json file
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("/mnt/c/Code/My Project-73a197f38f62.json", scope)
+
+    gc = gspread.authorize(credentials)
+
+    nh = gc.open_by_url("https://docs.google.com/spreadsheets/d/1naV-RWDG_5yIcFsThrJ6TJDOO2GI9aFmCbvh5c6OUO8/edit#gid=0")
+    GXWorksheet = nh.worksheet("GasExchange")
+    GXWorksheetRows = len(GXWorksheet.col_values(1,'FORMATTED_VALUE'))
+    GXWorksheetCols = len(GXWorksheet.row_values(1,'FORMATTED_VALUE'))
+
+
+    # GXWorksheet.update_cell(GXWorksheetRows+1, 1, sid_formatted)
+    html_keys = ['Subject_ID', 'inflation', 'RBC2barrier', 'ven_defect', 'ven_low', 'ven_high', 'ven_mean', 'ven_SNR', 'bar_defect']
+    html_keys.extend(['bar_low', 'bar_high', 'bar_mean', 'bar_SNR', 'bar_negative', 'rbc_defect', 'rbc_low'])
+    html_keys.extend(['rbc_high', 'rbc_mean', 'rbc_SNR', 'rbc_negative'])
+
+    for i in range(len(html_keys)):
+        GXWorksheet.update_cell(GXWorksheetRows+1, i+1, html_parameters[html_keys[i]])
+
+    print('***************Google Sheet Updated****************')
